@@ -1,3 +1,1 @@
-"""
-The Cherab submodule for the Iter tokamak.
-"""
+"""The Cherab subpacakge for the ITER tokamak."""
