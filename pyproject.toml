@@ -158,9 +158,9 @@ python-build = "*"
 setuptools = "*"
 
 [tool.pixi.feature.dev.tasks]
-run-mypy = "mypy cherab-iter"
-run-ruff-check = "ruff check cherab-iter"
-run-ruff-format = "ruff format cherab-iter"
+run-mypy = "mypy cherab demos"
+run-ruff-check = "ruff check cherab demos"
+run-ruff-format = "ruff format cherab demos"
 run-pytest = "pytest -x"
 run-pre-commit = "pre-commit run --all-files"
 build-wheel = "python -m build -x -n -w"
