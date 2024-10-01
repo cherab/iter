@@ -1,3 +1,171 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "cherab-iter"
+version = "0.1.0.dev0"
+description = "Cherab spectroscopy framework, ITER subpackage"
+authors = [
+  { name = "munechika-koyo", email = "munechika.koyo@gmail.com" },
+  { name = "vsnever" },
+  { name = "jacklovell" },
+]
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE.txt" }
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Education",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: European Union Public Licence 1.1 (EUPL 1.1)",
+  "Natural Language :: English",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Scientific/Engineering :: Physics",
+  "Topic :: Software Development :: Libraries",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = ["cherab==1.5.0"]
+
+[project.urls]
+Homepage = "https://github.com/cherab"
+# Documentation = "https://cherab.github.io/cherab-iter"
+Repository = "https://github.com/cherab/iter"
+Issues = "https://github.com/cherab/iter/issues"
+
+[tool.setuptools.packages.find]
+include = ["cherab"]
+
+
+# ------------------------------
+# === Lint & Format settings ===
+# ------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+fix = true
+namespace-packages = ["cherab/iter"]
+
+[tool.ruff.lint]
+select = [
+  "E",   # pycodestyle
+  "B",   # flake8-bugbear
+  "F",   # pyflakes
+  "I",   # isort (import order)
+  "N",   # pep8-naming
+  "W",   # Warning
+  "UP",  # pyupgrade
+  "NPY", # numpy specific rules
+]
+ignore = [
+  # Recommended ignores by ruff when using formatter
+  "E501",   # line too long
+  "W191",   # indentation contains tabs
+  "E111",
+  "E114",
+  "E117",
+  "D206",
+  "D300",
+  "N803",   # invalid argument name
+  "N806",   # non lowercase variable in function
+  "Q000",
+  "Q001",
+  "Q002",
+  "Q003",
+  "COM812",
+  "COM819",
+  "ISC001",
+  "ISC002",
+]
+
+[tool.ruff.format]
+# Black settings
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+
+[tool.docformatter]
+recursive = true
+wrap-summaries = 100
+wrap-descriptions = 100
+blank = false
+
+[tool.numpydoc_validation]
+checks = [
+  "all",  # report on all checks, except the below
+  "GL01", # Docstring text (summary) should start in the line immediately
+  "EX01", # No examples section found
+  "SA01", # See Also section not found
+  "ES01", # No extended summary found
+  "GL08", # The object does not have a docstring
+  "RT01", # No Returns section found
+  "PR01", # Parameters {missing_params} not documented
+  "SS06", # Summary should fit in a single line
+]
+# remember to use single quotes for regex in TOML
+exclude = [ # don't report on objects that match any of these regex
+  '\.__repr__$',
+]
+override_SS05 = ['^Process ', '^Assess ', '^Access ']
+
+[tool.mypy]
+check_untyped_defs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--cov=cherab_iter --cov-report term-missing --no-cov-on-fail"
+
+
+# --------------------------
+# === Pixi configuration ===
+# --------------------------
+[tool.pixi.project]
+channels = ["https://fast.prefix.dev/conda-forge", "conda-forge"]
+platforms = ["linux-64", "osx-arm64", "osx-64"]
+
+[tool.pixi.dependencies]
+# Runtime dependencies
+python = "*"
+numpy = "<2.0"
+scipy = "*"
+matplotlib = "*"
+plotly = "*"
+# raysect = "*"
+
+[tool.pixi.pypi-dependencies]
+cherab-iter = { path = ".", editable = true }
+cherab-imas = { git = "https://github.com/munechika-koyo/cherab-imas.git", rev = "1482340d2f6d27c1dc5258b03b329698fb1f7dc5" }
+
+[tool.pixi.pypi-options]
+no-build-isolation = ["cherab-iter"]
+
+[tool.pixi.feature.dev.dependencies]
+# For testing, linting, formatting
+ipython = "*"
+pre-commit = "*"
+ruff = "*"
+mypy = "*"
+pytest = "*"
+pytest-cov = "*"
+# For building
+python-build = "*"
+setuptools = "*"
+
+[tool.pixi.feature.dev.tasks]
+run-mypy = "mypy cherab-iter"
+run-ruff-check = "ruff check cherab-iter"
+run-ruff-format = "ruff format cherab-iter"
+run-pytest = "pytest -x"
+run-pre-commit = "pre-commit run --all-files"
+build-wheel = "python -m build -x -n -w"
+build-sdist = "python -m build -x -n -s"
+
+[tool.pixi.environments]
+default = { features = [], solve-group = "default" }
+dev = { features = ["dev"], solve-group = "default" }
