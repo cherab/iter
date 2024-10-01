@@ -1,0 +1,72 @@
+ci:
+  autofix_prs: true
+  autoupdate_schedule: quarterly
+  autoupdate_branch: development
+
+default_language_version:
+  node: 16.15.0
+
+repos:
+
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.6.0
+  hooks:
+  - id: check-ast
+  - id: trailing-whitespace
+  - id: end-of-file-fixer
+    exclude: .*\.svg
+  - id: check-merge-conflict
+    exclude: .*\.rst
+  - id: check-symlinks
+  - id: check-case-conflict
+  - id: check-json
+  - id: check-toml
+  - id: check-yaml
+
+# validate pyproject.toml
+- repo: https://github.com/abravalheri/validate-pyproject
+  rev: v0.20.2
+  hooks:
+  - id: validate-pyproject
+
+# lint and format python codes by ruff
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.6.8
+  hooks:
+  - id: ruff
+    args: [--fix, --exit-non-zero-on-fix]
+  - id: ruff-format
+
+# lint and format jupyter notebooks by nbqa-ruff
+- repo: https://github.com/nbQA-dev/nbQA
+  rev: 1.8.7
+  hooks:
+  - id: nbqa-ruff
+    args: [--fix, --ignore=E402]
+
+# lint cython codes
+# - repo: https://github.com/MarcoGorelli/cython-lint
+#   rev: v0.16.2
+#   hooks:
+#   - id: cython-lint
+
+# format yaml files
+- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+  rev: v2.14.0
+  hooks:
+  - id: pretty-format-yaml
+    args: [--autofix, --indent, '2']
+
+# format docstrings in python codes
+- repo: https://github.com/PyCQA/docformatter
+  rev: v1.7.5
+  hooks:
+  - id: docformatter
+    additional_dependencies: [tomli]
+    args: [--in-place]
+
+# lint docstrings by numpydoc
+- repo: https://github.com/numpy/numpydoc
+  rev: v1.8.0
+  hooks:
+  - id: numpydoc-validation
