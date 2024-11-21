@@ -9,7 +9,7 @@ default_language_version:
 repos:
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.6.0
+  rev: v5.0.0
   hooks:
   - id: check-ast
   - id: trailing-whitespace
@@ -25,13 +25,13 @@ repos:
 
 # validate pyproject.toml
 - repo: https://github.com/abravalheri/validate-pyproject
-  rev: v0.20.2
+  rev: v0.23
   hooks:
   - id: validate-pyproject
 
 # lint and format python codes by ruff
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.6.8
+  rev: v0.7.4
   hooks:
   - id: ruff
     args: [--fix, --exit-non-zero-on-fix]
@@ -39,7 +39,7 @@ repos:
 
 # lint and format jupyter notebooks by nbqa-ruff
 - repo: https://github.com/nbQA-dev/nbQA
-  rev: 1.8.7
+  rev: 1.9.1
   hooks:
   - id: nbqa-ruff
     args: [--fix, --ignore=E402]
