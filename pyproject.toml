@@ -1,10 +1,9 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
 name = "cherab-iter"
-version = "0.1.0.dev0"
 description = "Cherab spectroscopy framework, ITER subpackage"
 authors = [
   { name = "munechika-koyo", email = "munechika.koyo@gmail.com" },
@@ -29,13 +28,18 @@ classifiers = [
   "Topic :: Software Development :: Libraries",
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-dependencies = ["cherab", "rich"]
+dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://github.com/cherab"
 # Documentation = "https://cherab.github.io/cherab-iter"
 Repository = "https://github.com/cherab/iter"
 Issues = "https://github.com/cherab/iter/issues"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.metadata.hooks.vcs]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/cherab"]
@@ -119,6 +123,7 @@ imas = "*"
 [tool.pixi.host-dependencies]
 python = "3.12.*"
 hatchling = "*"
+hatch-vcs = "*"
 
 [tool.pixi.pypi-dependencies]
 cherab-iter = { path = ".", editable = true }
@@ -156,6 +161,5 @@ ipywidgets = "*"
 run-jupyterlab = "jupyter lab --notebook-dir cherab/demos"
 
 [tool.pixi.environments]
-default = { features = [], solve-group = "default" }
 dev = { features = ["dev"], solve-group = "default" }
 lab = { features = ["lab"], solve-group = "default" }
