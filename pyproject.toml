@@ -28,6 +28,7 @@ classifiers = [
   "Topic :: Software Development :: Libraries",
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
+dependencies = ["cherab", "platformdirs", "rich"]
 dynamic = ["version"]
 
 [project.urls]
@@ -114,6 +115,7 @@ channels = ["https://prefix.dev/conda-forge"]
 platforms = ["linux-64", "osx-arm64", "osx-64"]
 
 [tool.pixi.dependencies]
+platformdirs = "*"
 rich = "*"
 cherab = "*"
 plotly = "*"
