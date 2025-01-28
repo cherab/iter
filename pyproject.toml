@@ -44,6 +44,8 @@ source = "vcs"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/cherab"]
+[tool.hatch.build.targets.wheel.shared-data]
+"share/cherab/demos/iter" = "demos/*"
 
 
 # ------------------------------
@@ -66,9 +68,9 @@ select = [
 ]
 ignore = [
   # Recommended ignores by ruff when using formatter
-  "E501",   # line too long
-  "N803",   # argument name should be lowercase
-  "N806",   # variable in function should be lowercase
+  "E501", # line too long
+  "N803", # argument name should be lowercase
+  "N806", # variable in function should be lowercase
 ]
 
 [tool.ruff.format]
@@ -134,34 +136,50 @@ cherab-imas = { git = "https://github.com/munechika-koyo/cherab-imas.git", rev =
 [tool.pixi.pypi-options]
 no-build-isolation = ["cherab-iter"]
 
-[tool.pixi.feature.dev.dependencies]
-# For testing, linting, formatting
-ipython = "*"
-pre-commit = "<4.0"
-ruff = "*"
-mypy = "*"
-pytest = "*"
-pytest-cov = "*"
-# For building
-python-build = "*"
-
-[tool.pixi.feature.dev.tasks]
-run-mypy = "mypy cherab demos"
-run-ruff-check = "ruff check cherab demos"
-run-ruff-format = "ruff format cherab demos"
-run-pytest = "pytest -x"
-run-pre-commit = "pre-commit run --all-files"
-build-wheel = "python -m build -nx -w"
-build-sdist = "python -m build -nx -s"
-
 [tool.pixi.feature.lab.dependencies]
 jupyterlab = "*"
 ipython = "*"
 ipywidgets = "*"
 
+# === Jupter Lab environment ===
 [tool.pixi.feature.lab.tasks]
-run-jupyterlab = "jupyter lab --notebook-dir cherab/demos"
+run-jupyterlab = { cmd = [
+  "jupyter",
+  "lab",
+  "--notebook-dir",
+  "demos",
+], description = "🚀 Run JupyterLab" }
+
+[tool.pixi.feature.test.dependencies]
+pytest = "*"
+pytest-cov = "*"
+
+# === Test environment ===
+[tool.pixi.feature.test.tasks]
+test = { cmd = ["pytest", "tests"], description = "🧪 Run the tests" }
+
+[tool.pixi.feature.lint.dependencies]
+ruff = "*"
+mypy = "*"
+pre-commit = "<4"  # docformatter issue: https://github.com/PyCQA/docformatter/pull/287
+
+# === Lint/Format environment ===
+[tool.pixi.feature.lint.tasks]
+lint = { cmd = "ruff check", description = "🧹 Lint the code" }
+format = { cmd = "ruff check --fix", description = "🎨 Format the code" }
+check = { cmd = [
+    "pre-commit",
+    "run",
+    "--all-files",
+], description = "🩺 Check the all pre-commit hooks", depends-on = [
+    "install-hooks",
+] }
+install-hooks = { cmd = [
+    "pre-commit",
+    "install",
+], description = "🔗 Install pre-commit hooks" }
 
 [tool.pixi.environments]
-dev = { features = ["dev"], solve-group = "default" }
 lab = { features = ["lab"], solve-group = "default" }
+test = { features = ["test"], solve-group = "default" }
+lint = { features = ["lint"], no-default-feature = true }
