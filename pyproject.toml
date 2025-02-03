@@ -167,14 +167,14 @@ pre-commit = "<4"  # docformatter issue: https://github.com/PyCQA/docformatter/p
 [tool.pixi.feature.lint.tasks]
 lint = { cmd = "ruff check", description = "🧹 Lint the code" }
 format = { cmd = "ruff check --fix", description = "🎨 Format the code" }
-check = { cmd = [
+pre-commit-run = { cmd = [
     "pre-commit",
     "run",
     "--all-files",
-], description = "🩺 Check the all pre-commit hooks", depends-on = [
-    "install-hooks",
+], description = "🩺 Run the all pre-commit hooks", depends-on = [
+    "pre-commit-install",
 ] }
-install-hooks = { cmd = [
+pre-commit-install = { cmd = [
     "pre-commit",
     "install",
 ], description = "🔗 Install pre-commit hooks" }
