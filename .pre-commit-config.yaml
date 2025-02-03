@@ -34,7 +34,7 @@ repos:
 
 # lint and format python codes by ruff
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.9.3
+  rev: v0.9.4
   hooks:
   - id: ruff
     args: [--fix]
@@ -60,6 +60,16 @@ repos:
   - id: pretty-format-yaml
     args: [--autofix, --indent, '2']
 
+# format markdown files
+- repo: https://github.com/hukkin/mdformat
+  rev: 0.7.22
+  hooks:
+  - id: mdformat
+    # Optionally add plugins
+    additional_dependencies:
+    - mdformat-gfm
+    - mdformat-black
+
 # format docstrings in python codes
 - repo: https://github.com/PyCQA/docformatter
   rev: v1.7.5
@@ -76,7 +86,7 @@ repos:
 
 # check misspellings in codes and texts
 - repo: https://github.com/codespell-project/codespell
-  rev: v2.4.0
+  rev: v2.4.1
   hooks:
   - id: codespell
     additional_dependencies: [tomli]
