@@ -29,19 +29,37 @@
 
 CHERAB-ITER; the CHERAB subpacakge for the ITER tokamak.
 
-## 🔧 Quick Installation for Developers
+## 🔧 Get started for Developers
+### Pre-requisites
+- [`pixi`](pixi-url), a tool for project and package management.
 
-You can quickly install with [`Pixi`][pixi-url] tool:
+If you don't have `git` installed, you can install it through `pixi` global installation:
+```bash
+pixi global install git
+```
+
+### Download and Run tasks
+You can clone the repository and enter the directory with:
 ```bash
 git clone https://github.com/cherab/iter
 cd iter
-pixi install -e dev
 ```
-Then, you can run the tests with:
+
+Then, you can run tasks with `pixi` like:
 ```bash
-pixi run run-pytest
+pixi run <task>
 ```
-Any other command can be run with `pixi run <command>`.
+
+For example, to run the tests:
+```bash
+pixi run test
+```
+
+Any other command can be seen with:
+```bash
+pixi task list
+```
+
 
 ## 🌐 Installation (future release)
 
