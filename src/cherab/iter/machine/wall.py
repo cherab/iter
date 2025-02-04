@@ -124,7 +124,7 @@ def load_pfc_mesh(
         }
         ```
         where the last value is the roughness of the material. If `None`, the material will be
-        `AbsorbingSurface`.
+        `~raysect.optical.material.absorber.AbsorbingSurface`.
     reflection : bool, optional
         Whether to use reflection or absorption, by default `False`.
     is_fine_mesh : bool, optional
@@ -134,7 +134,7 @@ def load_pfc_mesh(
     quiet : bool, optional
         Whether to suppress the output, by default `False`.
     cache : bool, optional
-        Whether to cache the mesh data, by default `True`.
+        Whether to cache the ``*.rsm`` mesh data, by default `True`.
         If already cached, the data will be loaded from the cache.
     backend : {"hdf5", "mdsplus", "uda", "memory"}, optional
         The IMAS backend to use, by default `"uda"`.
@@ -143,6 +143,24 @@ def load_pfc_mesh(
     -------
     dict[str, `~raysect.primitive.mesh.Mesh`]
         The PFC meshes.
+
+    Examples
+    --------
+    When you already cached the mesh data in the cache directory, the default behavior looks like:
+
+    .. code-block:: python
+
+        >>> meshes = load_pfc_mesh()
+
+    The local IMAS database can be used like:
+    .. code-block:: python
+
+        custom_imas_queries = {
+            "first_wall": {
+                "path": "/path/to/database/",
+            },
+        }
+        meshes = load_pfc_mesh(custom_imas_queries=custom_imas_queries, cache=False, backend="hdf5")
     """
     # Merge user-defined queries with default queries
     if custom_imas_queries is not None:
@@ -320,6 +338,15 @@ def load_wall_outline(
     -------
     dict[str, numpy.ndarray]
         The wall outline data.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        custom_wall_query = {
+            "path": "/path/to/database/",
+        }
+        wall_outline = load_wall_outline(custom_wall_query=custom_wall_query)
     """
     # Update the default queriey with custom one
     if custom_wall_query is not None:
@@ -346,7 +373,7 @@ def load_wall_outline(
     return wall_outline
 
 
-def load_wall_absorber(parent: _NodeBase, **kwargs) -> CSGPrimitive:
+def load_wall_absorber(parent: _NodeBase | None = None, **kwargs) -> CSGPrimitive:
     """Load the ITER wall outline and create the wall absorber.
 
     This function creates an absorbing wall around the ITER first walls and divertor to terminate
@@ -354,7 +381,7 @@ def load_wall_absorber(parent: _NodeBase, **kwargs) -> CSGPrimitive:
 
     Parameters
     ----------
-    parent : `~raysect.core.scenegraph._nodebase._NodeBase`
+    parent : `~raysect.core.scenegraph._nodebase._NodeBase`, optional
         The parent node in the Raysect scene-graph.
     **kwargs
         The keyword arguments to pass to `.load_wall_outline`.
@@ -363,6 +390,12 @@ def load_wall_absorber(parent: _NodeBase, **kwargs) -> CSGPrimitive:
     -------
     `~raysect.primitive.csg.CSGPrimitive`
         The wall absorber.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        >>> load_wall_absorber()
     """
     # Load the wall outline
     outlines = load_wall_outline(**kwargs)
