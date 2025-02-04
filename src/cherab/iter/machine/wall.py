@@ -182,7 +182,7 @@ def load_pfc_mesh(
 
     # Load meshes
     meshes = {}
-    with Live(progress_group, auto_refresh=False, console=Console(quiet=quiet)) as live:
+    with Live(progress_group, auto_refresh=True, console=Console(quiet=quiet)) as live:
         for mesh_name, query in queries.items():
             # Skip if the mesh is not requested
             if query.get("skip", False):
@@ -214,7 +214,9 @@ def load_pfc_mesh(
                     query["pulse"],
                     query["version"],
                 )
-                cache_path = get_cache_path(f"machine/{mesh_name}_{shot}_{pulse}_{db}.rsm")
+                cache_path = get_cache_path(
+                    f"machine/{mesh_name}_{shot}_{pulse}_{db}_{version}.rsm"
+                )
                 if cache and cache_path.exists():
                     progress.update(task_id, description=f"{progress_text} (from cache)")
                     live.refresh()
