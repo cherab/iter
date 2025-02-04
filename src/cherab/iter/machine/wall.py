@@ -75,9 +75,11 @@ def show_registries() -> None:
     table.add_column("Pulse", justify="center", style="yellow")
     table.add_column("Version", justify="center", style="blue")
 
-    queries = PFC_QUERIES | WALL_OUTLINE_QUERY
+    queries = PFC_QUERIES | dict(wall_outline=WALL_OUTLINE_QUERY)
     for name, query in queries.items():
-        table.add_row(name, query["db"], query["shot"], query["pulse"], query["version"])
+        table.add_row(
+            name, query["db"], str(query["shot"]), str(query["pulse"]), str(query["version"])
+        )
 
     console = Console()
     console.print(table)
