@@ -11,7 +11,8 @@ from raysect.optical.material import (
     AbsorbingSurface,  # type: ignore
     Material,  # type: ignore
 )
-from raysect.primitive import CSGPrimitive, Cylinder, Mesh, Subtract, Union
+from raysect.primitive import Cylinder, Mesh, Subtract, Union
+from raysect.primitive.csg import CSGPrimitive
 from rich.console import Console, Group
 from rich.live import Live
 from rich.progress import Progress
@@ -27,7 +28,7 @@ __all__ = ["load_pfc_mesh", "load_wall_outline"]
 # Default ITER IMAS quaries
 PREFIX = "/work/imas/shared/imasdb/"
 PFC_QUERIES = {
-    "first wall": {
+    "first_wall": {
         "db": "ITER_MD",
         "shot": 116100,
         "pulse": 1001,
@@ -40,7 +41,7 @@ PFC_QUERIES = {
         "pulse": 2001,
         "version": 3,
     },
-    "first wall fine": {
+    "first_wall_fine": {
         "db": "ITER_MD",
         "shot": 116100,
         "pulse": 3001,
@@ -60,7 +61,7 @@ ROUGHNESS_W = 0.29
 
 # Default material map
 MAP_MATERIALS = {
-    "first wall": (AbsorbingSurface, None),
+    "first_wall": (AbsorbingSurface, None),
     "divertor": (RoughTungsten, ROUGHNESS_W),
 }
 
@@ -101,7 +102,7 @@ def load_pfc_mesh(
         If you can path the custom query, like:
         ```python
         custom_imas_queries = {
-            "first wall": {
+            "first_wall": {
                 "db": "ITER_MD",
                 "shot": 116100,
                 "pulse": 1001,
@@ -117,7 +118,7 @@ def load_pfc_mesh(
         If you can path the custom material map, like:
         ```python
         custom_material = {
-            "first wall": (RoughTungsten, 0.29),
+            "first_wall": (RoughTungsten, 0.29),
         }
         ```
         where the last value is the roughness of the material. If `None`, the material will be
@@ -149,8 +150,8 @@ def load_pfc_mesh(
         queries = PFC_QUERIES
 
     if is_fine_mesh:
-        queries["first wall"]["skip"] = True
-        queries["first wall fine"]["skip"] = False
+        queries["first_wall"]["skip"] = True
+        queries["first_wall_fine"]["skip"] = False
 
     # Merge user-defined materials with default materials
     if custom_material is not None:
@@ -210,7 +211,7 @@ def load_pfc_mesh(
                     query["pulse"],
                     query["version"],
                 )
-                cache_path = get_cache_path(f"machin/{mesh_name}_{shot}_{pulse}_{db}.rsm")
+                cache_path = get_cache_path(f"machine/{mesh_name}_{shot}_{pulse}_{db}.rsm")
                 if cache and cache_path.exists():
                     progress.update(task_id, description=f"{progress_text} (from cache)")
                     meshes[mesh_name] = Mesh.from_file(
@@ -218,7 +219,7 @@ def load_pfc_mesh(
                     )
                     path = str(cache_path)
                 else:
-                    progress.update(task_id, description=f"{progress_text} (from IMAS)")
+                    progress.update(task_id, description=f"{progress_text} (from IMAS database)")
                     if (_path := query.get("path", None)) is not None:
                         path = f"imas:{backend}?path={_path};backend=hdf5"
                     else:
@@ -319,7 +320,7 @@ def load_wall_outline(
 
     # Load wall outline
     db, shot, pulse, version = query["db"], query["shot"], query["pulse"], query["version"]
-    cache_path = get_cache_path(f"machin/wall_outline_{shot}_{pulse}_{db}_{version}.npy")
+    cache_path = get_cache_path(f"machine/wall_outline_{shot}_{pulse}_{db}_{version}.npy")
     if cache and cache_path.exists():
         wall_outline = np.load(cache_path, allow_pickle=True).item()
     else:
