@@ -31,20 +31,20 @@ PFC_QUERIES = {
     "first_wall": {
         "db": "ITER_MD",
         "shot": 116100,
-        "pulse": 1001,
+        "run": 1001,
         "version": 3,
         "skip": False,
     },
     "divertor": {
         "db": "ITER_MD",
         "shot": 116100,
-        "pulse": 2001,
+        "run": 2001,
         "version": 3,
     },
     "first_wall_fine": {
         "db": "ITER_MD",
         "shot": 116100,
-        "pulse": 3001,
+        "run": 3001,
         "version": 3,
         "skip": True,
     },
@@ -53,7 +53,7 @@ PFC_QUERIES = {
 WALL_OUTLINE_QUERY = {
     "db": "ITER_MD",
     "shot": 116000,
-    "pulse": 5,
+    "run": 5,
     "version": 3,
 }
 
@@ -72,13 +72,13 @@ def show_registries() -> None:
     table.add_column("Name", justify="left", style="cyan")
     table.add_column("Database", justify="left", style="magenta")
     table.add_column("Shot", justify="center", style="green")
-    table.add_column("Pulse", justify="center", style="yellow")
+    table.add_column("Run", justify="center", style="yellow")
     table.add_column("Version", justify="center", style="blue")
 
     queries = PFC_QUERIES | dict(wall_outline=WALL_OUTLINE_QUERY)
     for name, query in queries.items():
         table.add_row(
-            name, query["db"], str(query["shot"]), str(query["pulse"]), str(query["version"])
+            name, query["db"], str(query["shot"]), str(query["run"]), str(query["version"])
         )
 
     console = Console()
@@ -107,7 +107,7 @@ def load_pfc_mesh(
             "first_wall": {
                 "db": "ITER_MD",
                 "shot": 116100,
-                "pulse": 1001,
+                "run": 1001,
                 "version": 3,
                 "skip": False,
                 "path": "/work/imas/shared/imasdb/ITER_MD/3/116100/1001",
@@ -208,15 +208,13 @@ def load_pfc_mesh(
                 # ================================
                 # Load PFC Meshes
                 # ================================
-                db, shot, pulse, version = (
+                db, shot, run, version = (
                     query["db"],
                     query["shot"],
-                    query["pulse"],
+                    query["run"],
                     query["version"],
                 )
-                cache_path = get_cache_path(
-                    f"machine/{mesh_name}_{shot}_{pulse}_{db}_{version}.rsm"
-                )
+                cache_path = get_cache_path(f"machine/{mesh_name}_{shot}_{run}_{db}_{version}.rsm")
                 if cache and cache_path.exists():
                     progress.update(task_id, description=f"{progress_text} (from cache)")
                     live.refresh()
@@ -230,7 +228,9 @@ def load_pfc_mesh(
                     if (_path := query.get("path", None)) is not None:
                         path = f"imas:{backend}?path={_path};backend=hdf5"
                     else:
-                        path = f"imas:{backend}?path={PREFIX}/{db}/{version}/{shot}/{pulse};backend=hdf5"
+                        path = (
+                            f"imas:{backend}?path={PREFIX}/{db}/{version}/{shot}/{run};backend=hdf5"
+                        )
                     entry = DBEntry(uri=path, mode="r")
                     meshes[mesh_name] = _load_wall_mesh(entry, parent).values()
 
@@ -304,7 +304,7 @@ def load_wall_outline(
         custom_wall_query = {
             "db": "ITER_MD",
             "shot": 116000,
-            "pulse": 5,
+            "run": 5,
             "version": 3,
             "path": "/work/imas/shared/imasdb/ITER_MD/3/116000/5",
         }
@@ -328,15 +328,15 @@ def load_wall_outline(
         query = WALL_OUTLINE_QUERY
 
     # Load wall outline
-    db, shot, pulse, version = query["db"], query["shot"], query["pulse"], query["version"]
-    cache_path = get_cache_path(f"machine/wall_outline_{shot}_{pulse}_{db}_{version}.npy")
+    db, shot, run, version = query["db"], query["shot"], query["run"], query["version"]
+    cache_path = get_cache_path(f"machine/wall_outline_{shot}_{run}_{db}_{version}.npy")
     if cache and cache_path.exists():
         wall_outline = np.load(cache_path, allow_pickle=True).item()
     else:
         if (_path := query.get("path", None)) is not None:
             path = f"imas:{backend}?path={_path};backend=hdf5"
         else:
-            path = f"imas:{backend}?path={PREFIX}/{db}/{version}/{shot}/{pulse};backend=hdf5"
+            path = f"imas:{backend}?path={PREFIX}/{db}/{version}/{shot}/{run};backend=hdf5"
         with DBEntry(uri=f"{path}", mode="r") as entry:
             description2d = entry.partial_get("wall", "description_2d(0)")
             wall_outline = load_wall_2d(description2d)
