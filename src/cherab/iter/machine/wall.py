@@ -15,7 +15,7 @@ from raysect.primitive import Cylinder, Mesh, Subtract, Union
 from raysect.primitive.csg import CSGPrimitive
 from rich.console import Console, Group
 from rich.live import Live
-from rich.progress import Progress
+from rich.progress import Progress, SpinnerColumn
 from rich.table import Table
 
 from cherab.imas.ids.common import get_ids_time_slice
@@ -91,7 +91,7 @@ def load_pfc_mesh(
     parent: _NodeBase | None = None,
     quiet: bool = False,
     cache: bool = True,
-    backend: str | None = None,
+    backend: str = "uda",
 ) -> dict[str, Mesh]:
     """Load the ITER PFC meshes from IMAS database.
 
@@ -134,9 +134,8 @@ def load_pfc_mesh(
     cache : bool, optional
         Whether to cache the mesh data, by default `True`.
         If already cached, the data will be loaded from the cache.
-    backend : str | None, optional
-        The IMAS backend to use, by default `None`.
-        If `None`, the default backend will be used.
+    backend : {"hdf5", "mdsplus", "uda", "memory"}, optional
+        The IMAS backend to use, by default `"uda"`.
 
     Returns
     -------
@@ -149,18 +148,20 @@ def load_pfc_mesh(
     else:
         queries = PFC_QUERIES
 
-    if is_fine_mesh:
-        queries["first_wall"]["skip"] = True
-        queries["first_wall_fine"]["skip"] = False
-
     # Merge user-defined materials with default materials
     if custom_material is not None:
         materials = MAP_MATERIALS | custom_material
     else:
         materials = MAP_MATERIALS
 
+    # Update the first wall query if the fine mesh is requested
+    if is_fine_mesh:
+        queries["first_wall"]["skip"] = True
+        queries["first_wall_fine"]["skip"] = False
+        materials.setdefault("first_wall_fine", materials["first_wall"])
+
     # Create progress bar and add task
-    progress = Progress(transient=True)
+    progress = Progress(SpinnerColumn(), *Progress.get_default_columns(), transient=True)
     task_id = progress.add_task("", total=len(queries))
 
     if not quiet:
@@ -214,12 +215,14 @@ def load_pfc_mesh(
                 cache_path = get_cache_path(f"machine/{mesh_name}_{shot}_{pulse}_{db}.rsm")
                 if cache and cache_path.exists():
                     progress.update(task_id, description=f"{progress_text} (from cache)")
+                    live.refresh()
                     meshes[mesh_name] = Mesh.from_file(
                         cache_path, parent=parent, material=material, name=mesh_name
                     )
                     path = str(cache_path)
                 else:
                     progress.update(task_id, description=f"{progress_text} (from IMAS database)")
+                    live.refresh()
                     if (_path := query.get("path", None)) is not None:
                         path = f"imas:{backend}?path={_path};backend=hdf5"
                     else:
@@ -282,7 +285,9 @@ def _load_wall_mesh(entry: DBEntry, parent: _NodeBase | None) -> dict[str, Mesh]
 
 
 def load_wall_outline(
-    custom_wall_query: dict[str, dict[str, int]] | None = None, backend="uda", cache=True
+    custom_wall_query: dict[str, dict[str, int]] | None = None,
+    backend: str = "uda",
+    cache: bool = True,
 ) -> dict[str, np.ndarray]:
     """Load the ITER wall outline from IMAS.
 
@@ -348,7 +353,7 @@ def load_wall_absorber(parent: _NodeBase, **kwargs) -> CSGPrimitive:
     parent : `~raysect.core.scenegraph._nodebase._NodeBase`
         The parent node in the Raysect scene-graph.
     **kwargs
-        The keyword arguments to pass to `load_wall_outline`.
+        The keyword arguments to pass to `.load_wall_outline`.
 
     Returns
     -------
