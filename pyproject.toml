@@ -37,15 +37,40 @@ Homepage = "https://github.com/cherab"
 Repository = "https://github.com/cherab/iter"
 Issues = "https://github.com/cherab/iter/issues"
 
+# ----------------------
+# === Version config ===
+# ----------------------
 [tool.hatch.version]
 source = "vcs"
 
 [tool.hatch.metadata.hooks.vcs]
 
+# ----------------------------
+# === Build/Package config ===
+# ----------------------------
 [tool.hatch.build.targets.wheel]
 packages = ["src/cherab"]
 [tool.hatch.build.targets.wheel.shared-data]
 "share/cherab/demos/iter" = "demos/*"
+
+# -----------------------
+# === Cov/Test config ===
+# -----------------------
+[tool.coverage.run]
+source_pkgs = ["cherab.iter"]
+branch = true
+parallel = true
+
+[tool.coverage.paths]
+test = ["src/test", "*/test/src/test"]
+tests = ["tests", "*/test/tests"]
+
+[tool.coverage.report]
+exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--cov=cherab_iter --cov-report term-missing --no-cov-on-fail"
 
 
 # ------------------------------
@@ -103,11 +128,6 @@ override_SS05 = ['^Process ', '^Assess ', '^Access ']
 [tool.mypy]
 check_untyped_defs = true
 disallow_untyped_defs = true
-
-[tool.pytest.ini_options]
-minversion = "6.0"
-addopts = "--cov=cherab_iter --cov-report term-missing --no-cov-on-fail"
-
 
 # --------------------------
 # === Pixi configuration ===
