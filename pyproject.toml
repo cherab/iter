@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling", "hatch-vcs"]
+requires = ["hatchling", "hatch-vcs", "hatch-cython>=0.6.0rc0", "numpy"]
 build-backend = "hatchling.build"
 
 [project]
@@ -50,8 +50,28 @@ source = "vcs"
 # ----------------------------
 [tool.hatch.build.targets.wheel]
 packages = ["src/cherab"]
+artifacts = [
+  "*.so",
+  "*.dll",
+  "*.dylib",
+]
+exclude = ["*.pyx", "cherab/iter/__init__.pxd"]
+
 [tool.hatch.build.targets.wheel.shared-data]
 "share/cherab/demos/iter" = "demos/*"
+
+[tool.hatch.build.targets.wheel.hooks.cython]
+dependencies = ["hatch-cython"]
+
+[tool.hatch.build.targets.wheel.hooks.cython.options]
+src = "cherab"
+include_numpy = true
+compile_args = ["-O3"]
+compile_py = false
+parallel = false
+
+[tool.hatch.build.targets.wheel.hooks.cython.options.files]
+targets = ["**/*.pyx"]
 
 # -----------------------
 # === Cov/Test config ===
@@ -97,6 +117,9 @@ ignore = [
   "N803", # argument name should be lowercase
   "N806", # variable in function should be lowercase
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"**/*.ipynb" = ["W292"] # no newline at end of file
 
 [tool.ruff.format]
 docstring-code-format = true
@@ -151,6 +174,9 @@ imas = "*"
 python = "3.12.*"
 hatchling = "*"
 hatch-vcs = "*"
+hatch-cython = ">=0.6.0rc0"
+c-compiler = "*"
+numpy = "*"
 
 [tool.pixi.pypi-dependencies]
 cherab-iter = { path = ".", editable = true }
