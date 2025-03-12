@@ -199,6 +199,51 @@ run-jupyterlab = { cmd = [
   "demos",
 ], description = "🚀 Run JupyterLab" }
 
+# === Docs environment ===
+[tool.pixi.feature.docs.dependencies]
+ipykernel = "*"
+ipywidgets = "*"
+nbconvert = "*"
+nbsphinx = "*"
+numpydoc = "*"
+pillow = "*"
+pygments = ">2.11.0"
+sphinx = ">=8.2.2,<9"
+sphinx-copybutton = "*"
+pydata-sphinx-theme = "*"
+sphinx-design = "*"
+pandoc = "*"
+sphinx-codeautolink = "*"
+python-kaleido = "*"
+
+[tool.pixi.feature.docs.pypi-dependencies]
+sphinx-github-style = "*"
+
+[tool.pixi.feature.docs.tasks]
+doc-build = { cmd = [
+    "sphinx-build",
+    "-b",
+    "html",
+    "-j",
+    "auto",
+    "docs/source",
+    "docs/build/html",
+], description = "📝 Build the docs" }
+doc-clean = { cmd = [
+    "rm",
+    "-rf",
+    "docs/build",
+    "docs/source/_api",
+], description = "🔥 Clean the docs build & api directory" }
+doc-serve = { cmd = [
+    "python",
+    "-m",
+    "http.server",
+    "8000",
+    "--directory",
+    "docs/build/html",
+], description = "🚀 Start a local server for the docs" }
+
 # === Test environment ===
 [tool.pixi.feature.test.dependencies]
 pytest = "*"
@@ -231,5 +276,6 @@ pre-commit-install = { cmd = [
 
 [tool.pixi.environments]
 lab = { features = ["lab"], solve-group = "default" }
+docs = { features = ["docs"], solve-group = "default" }
 test = { features = ["test"], solve-group = "default" }
 lint = { features = ["lint"], no-default-feature = true }
