@@ -21,7 +21,7 @@ This guide is an overview and explains the important features.
    :maxdepth: 2
    :caption: Features
 
-   ITER_PFC
+   ITER_PFCs
 
 
 .. toctree::
