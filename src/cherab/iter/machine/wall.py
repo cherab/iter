@@ -23,7 +23,7 @@ from cherab.imas.ids.wall import load_wall_2d, load_wall_3d
 
 from ..utils import get_cache_path
 
-__all__ = ["load_pfc_mesh", "load_wall_outline"]
+__all__ = ["load_pfc_mesh", "load_wall_outline", "load_wall_absorber", "show_registries"]
 
 # Default ITER IMAS quaries
 PREFIX = "/work/imas/shared/imasdb/"
@@ -67,7 +67,20 @@ MAP_MATERIALS = {
 
 
 def show_registries() -> None:
-    """Show Default ITER IMAS quaries."""
+    """Show Default ITER IMAS queries.
+
+    Examples
+    --------
+    >>> show_registries()
+    ┏━━━━━━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━┳━━━━━━┳━━━━━━━━━┓
+    ┃ Name            ┃ Database ┃  Shot  ┃ Run  ┃ Version ┃
+    ┡━━━━━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━╇━━━━━━╇━━━━━━━━━┩
+    │ first_wall      │ ITER_MD  │ 116100 │ 1001 │    3    │
+    │ divertor        │ ITER_MD  │ 116100 │ 2001 │    3    │
+    │ first_wall_fine │ ITER_MD  │ 116100 │ 3001 │    3    │
+    │ wall_outline    │ ITER_MD  │ 116000 │  5   │    3    │
+    └─────────────────┴──────────┴────────┴──────┴─────────┘
+    """
     table = Table(title="ITER IMAS Queries", show_footer=False)
     table.add_column("Name", justify="left", style="cyan")
     table.add_column("Database", justify="left", style="magenta")
@@ -102,27 +115,23 @@ def load_pfc_mesh(
     custom_imas_queries : dict[str, dict[str, int]], optional
         The custom IMAS queries, by default `None`.
         If you can path the custom query, like:
-        ```python
-        custom_imas_queries = {
-            "first_wall": {
-                "db": "ITER_MD",
-                "shot": 116100,
-                "run": 1001,
-                "version": 3,
-                "skip": False,
-                "path": "/work/imas/shared/imasdb/ITER_MD/3/116100/1001",
-            },
-        }
-        ```
-        `path` key is optional, if provided it is prioritized over the other keys.
+            custom_imas_queries = {
+                "first_wall": {
+                    "db": "ITER_MD",
+                    "shot": 116100,
+                    "run": 1001,
+                    "version": 3,
+                    "skip": False,
+                    "path": "/work/imas/shared/imasdb/ITER_MD/3/116100/1001",
+                },
+            }
+        `path` key is optional. If provided, it is prioritized over the other keys.
     custom_material : dict[str, tuple[Material, float | None]], optional
         The custom material map, by default `None`.
         If you can path the custom material map, like:
-        ```python
-        custom_material = {
-            "first_wall": (RoughTungsten, 0.29),
-        }
-        ```
+            custom_material = {
+                "first_wall": (RoughTungsten, 0.29),
+            }
         where the last value is the roughness of the material. If `None`, the material will be
         `~raysect.optical.material.absorber.AbsorbingSurface`.
     reflection : bool, optional
@@ -141,18 +150,17 @@ def load_pfc_mesh(
 
     Returns
     -------
-    dict[str, `~raysect.primitive.mesh.Mesh`]
+    dict[str, `~raysect.primitive.mesh.mesh.Mesh`]
         The PFC meshes.
 
     Examples
     --------
     When you already cached the mesh data in the cache directory, the default behavior looks like:
 
-    .. code-block:: python
-
-        >>> meshes = load_pfc_mesh()
+    >>> meshes = load_pfc_mesh()
 
     The local IMAS database can be used like:
+
     .. code-block:: python
 
         custom_imas_queries = {
@@ -160,7 +168,11 @@ def load_pfc_mesh(
                 "path": "/path/to/database/",
             },
         }
-        meshes = load_pfc_mesh(custom_imas_queries=custom_imas_queries, cache=False, backend="hdf5")
+        meshes = load_pfc_mesh(
+            custom_imas_queries=custom_imas_queries,
+            cache=False,
+            backend="hdf5",
+        )
     """
     # Merge user-defined queries with default queries
     if custom_imas_queries is not None:
@@ -289,7 +301,7 @@ def _load_wall_mesh(entry: DBEntry, parent: _NodeBase | None) -> dict[str, Mesh]
 
     Returns
     -------
-    dict[str, `~raysect.primitive.mesh.Mesh`]
+    dict[str, `~raysect.primitive.mesh.mesh.Mesh`]
         The wall mesh components.
     """
     wall_ids = get_ids_time_slice(entry, "wall")
@@ -318,16 +330,14 @@ def load_wall_outline(
     custom_wall_query : dict[str, dict[str, int]], optional
         The custom wall outline queries, by default `None`.
         If you can path the custom query, like:
-        ```python
-        custom_wall_query = {
-            "db": "ITER_MD",
-            "shot": 116000,
-            "run": 5,
-            "version": 3,
-            "path": "/work/imas/shared/imasdb/ITER_MD/3/116000/5",
-        }
-        ```
-        `path` key is optional, if provided it is prioritized over the other keys.
+            custom_wall_query = {
+                "db": "ITER_MD",
+                "shot": 116000,
+                "run": 5,
+                "version": 3,
+                "path": "/work/imas/shared/imasdb/ITER_MD/3/116000/5",
+            }
+        `path` key is optional. If provided, it is prioritized over the other keys.
     backend : {"hdf5", "mdsplus", "uda", "memory"}, optional
         The IMAS backend to use, by default `"uda"`.
     cache : bool, optional
@@ -393,9 +403,8 @@ def load_wall_absorber(parent: _NodeBase | None = None, **kwargs) -> CSGPrimitiv
 
     Examples
     --------
-    .. code-block:: python
-
-        >>> load_wall_absorber()
+    >>> load_wall_absorber()
+    <raysect.primitive.csg.Union at 0x107b8fe80>
     """
     # Load the wall outline
     outlines = load_wall_outline(**kwargs)
@@ -416,8 +425,8 @@ def load_wall_absorber(parent: _NodeBase | None = None, **kwargs) -> CSGPrimitiv
     hight_in = zmax - zmin
     hight_out = hight_in + thickness * 2
 
-    # Create absorbe wall
-    Union(
+    # Create absorbe wall and return it
+    return Union(
         Cylinder(rmin, hight_out),
         Subtract(
             Cylinder(r_out, hight_out),
