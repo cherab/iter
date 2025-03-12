@@ -34,24 +34,17 @@ repos:
 
 # lint and format python codes by ruff
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.9.4
+  rev: v0.9.10
   hooks:
   - id: ruff
     args: [--fix]
   - id: ruff-format
 
-# lint and format jupyter notebooks by nbqa-ruff
-- repo: https://github.com/nbQA-dev/nbQA
-  rev: 1.9.1
-  hooks:
-  - id: nbqa-ruff
-    args: [--fix, --ignore=E402]
-
 # lint cython codes
-# - repo: https://github.com/MarcoGorelli/cython-lint
-#   rev: v0.16.2
-#   hooks:
-#   - id: cython-lint
+- repo: https://github.com/MarcoGorelli/cython-lint
+  rev: v0.16.6
+  hooks:
+  - id: cython-lint
 
 # format yaml files
 - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
@@ -90,3 +83,6 @@ repos:
   hooks:
   - id: codespell
     additional_dependencies: [tomli]
+    args:
+    - --ignore-regex=^\s*"image\/(jpeg|png|gif|bmp|tiff)":\s.*
+    - --exclude-file=pixi.lock

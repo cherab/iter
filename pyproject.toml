@@ -101,6 +101,9 @@ ignore = [
 [tool.ruff.format]
 docstring-code-format = true
 
+[tool.cython-lint]
+max-line-length = 100
+
 [tool.docformatter]
 recursive = true
 wrap-summaries = 100
@@ -156,12 +159,12 @@ cherab-imas = { git = "https://github.com/munechika-koyo/cherab-imas.git", rev =
 [tool.pixi.pypi-options]
 no-build-isolation = ["cherab-iter"]
 
+# === Jupter Lab environment ===
 [tool.pixi.feature.lab.dependencies]
 jupyterlab = "*"
 ipython = "*"
 ipywidgets = "*"
 
-# === Jupter Lab environment ===
 [tool.pixi.feature.lab.tasks]
 run-jupyterlab = { cmd = [
   "jupyter",
@@ -170,20 +173,20 @@ run-jupyterlab = { cmd = [
   "demos",
 ], description = "🚀 Run JupyterLab" }
 
+# === Test environment ===
 [tool.pixi.feature.test.dependencies]
 pytest = "*"
 pytest-cov = "*"
 
-# === Test environment ===
 [tool.pixi.feature.test.tasks]
 test = { cmd = ["pytest", "tests"], description = "🧪 Run the tests" }
 
+# === Lint/Format environment ===
 [tool.pixi.feature.lint.dependencies]
 ruff = "*"
 mypy = "*"
 pre-commit = "<4"  # docformatter issue: https://github.com/PyCQA/docformatter/pull/287
 
-# === Lint/Format environment ===
 [tool.pixi.feature.lint.tasks]
 lint = { cmd = "ruff check", description = "🧹 Lint the code" }
 format = { cmd = "ruff check --fix", description = "🎨 Format the code" }
@@ -198,6 +201,7 @@ pre-commit-install = { cmd = [
     "pre-commit",
     "install",
 ], description = "🔗 Install pre-commit hooks" }
+
 
 [tool.pixi.environments]
 lab = { features = ["lab"], solve-group = "default" }
