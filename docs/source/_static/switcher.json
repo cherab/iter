@@ -1,0 +1,12 @@
+[
+  {
+    "url": "https://cherab-iter.readthedocs.io/en/latest/",
+    "version": "dev"
+  },
+  {
+    "name": "0.1",
+    "preferred": true,
+    "url": "https://cherab-iter.readthedocs.io/en/v0.1.0/",
+    "version": "v0.1.0"
+  }
+]
