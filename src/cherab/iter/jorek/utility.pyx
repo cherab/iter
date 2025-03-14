@@ -255,7 +255,7 @@ def py_fourier_mode(double phi, int index, int periodicity = 1) -> float:
     Parameters
     ----------
     phi : float
-        Angle :math:`\\varphi` at which to evaluate the Fourier mode in radians.
+        Angle :math:`\\varphi` at which to evaluate the Fourier mode in degree.
     index : int
         Index :math:`l` of the Fourier mode.
     periodicity : int, optional

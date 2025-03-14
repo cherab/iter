@@ -1,12 +1,14 @@
 from libc.math cimport sin, cos
 
+DEF TO_DEG = 3.14159265358979323846 / 180.0
+
 cdef inline double fourier_mode(double *phi, int *index, int *periodicity) noexcept nogil:
     if index[0] == 0:
         return 1.0
     elif index[0] % 2 == 0:
-        return sin(phi[0] * periodicity[0] * index[0] * 0.5)
+        return sin(phi[0] * TO_DEG * periodicity[0] * index[0] * 0.5)
     else:
-        return cos(phi[0] * periodicity[0] * (index[0] + 1) * 0.5)
+        return cos(phi[0] * TO_DEG * periodicity[0] * (index[0] + 1) * 0.5)
 
 cdef void bezier_basis(double *s, double *t, double[4][4] a) noexcept nogil
 
