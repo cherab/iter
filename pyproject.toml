@@ -162,6 +162,15 @@ disallow_untyped_defs = true
 channels = ["https://prefix.dev/conda-forge"]
 platforms = ["linux-64", "osx-arm64", "osx-64"]
 
+[tool.pixi.activation.env]
+# UDA environment variables
+UDA_PORT="56565"
+UDA_HOST="uda.iter.org"
+UDA_CLIENT_SSL_KEY="$PIXI_PROJECT_ROOT/.uda/private.key"
+UDA_CLIENT_CA_SSL_CERT="$PIXI_PROJECT_ROOT/.uda/ca-server-certificate.pem"
+UDA_CLIENT_SSL_CERT="$PIXI_PROJECT_ROOT/.uda/certificate.pem"
+UDA_CLIENT_SSL_AUTHENTICATE="1"
+
 [tool.pixi.dependencies]
 platformdirs = "*"
 rich = "*"
