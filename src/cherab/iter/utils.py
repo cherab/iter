@@ -7,8 +7,8 @@ from platformdirs import user_cache_path
 __all__ = ["get_cache_path", "IMAS_DB_PREFIX"]
 
 
-IMAS_DB_PREFIX = "/work/imas/shared/imasdb/"
-"""str: The prefix for the IMAS database path."""
+IMAS_DB_PREFIX = Path("/work/imas/shared/imasdb/")
+"""Path: The prefix for the IMAS database path."""
 
 
 def get_cache_path(path: str) -> Path:

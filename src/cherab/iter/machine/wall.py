@@ -199,7 +199,7 @@ def load_pfc_mesh(
         # Create Table of the status of loading
         table = Table(title="Plasma Facing Components", show_footer=False)
         table.add_column("Name", justify="left", style="cyan")
-        table.add_column("Path", justify="left", style="magenta")
+        table.add_column("Path (URI)", justify="left", style="magenta")
         table.add_column("Material", justify="center", style="green")
         table.add_column("Roughness", justify="center", style="yellow")
         table.add_column("Loaded", justify="center")
@@ -250,18 +250,17 @@ def load_pfc_mesh(
                     meshes[mesh_name] = Mesh.from_file(
                         cache_path, parent=parent, material=material, name=mesh_name
                     )
-                    path = str(cache_path)
+                    uri = str(cache_path)
                 else:
                     progress.update(task_id, description=f"{progress_text} (from IMAS database)")
                     live.refresh()
                     if (_path := query.get("path", None)) is not None:
-                        path = f"imas:{backend}?path={_path};backend=hdf5"
+                        uri = f"imas:{backend}?path={_path};backend=hdf5"
                     else:
-                        path = (
-                            f"imas:{backend}?"
-                            f"path={IMAS_DB_PREFIX}/{db}/{version}/{shot}/{run};backend=hdf5"
-                        )
-                    entry = DBEntry(uri=path, mode="r")
+                        path = IMAS_DB_PREFIX / f"{db}/{version}/{shot}/{run}"
+                        uri = f"imas:{backend}?path={path.as_posix()};backend=hdf5"
+
+                    entry = DBEntry(uri=uri, mode="r")
                     meshes[mesh_name] = _load_wall_mesh(entry, parent).values()
 
                     # Cache the mesh
@@ -276,7 +275,7 @@ def load_pfc_mesh(
                 if not quiet:
                     table.add_row(
                         mesh_name,
-                        path,
+                        uri,
                         material_cls.__name__,
                         str(roughness),
                         _status,
@@ -371,10 +370,11 @@ def load_wall_outline(
         wall_outline = np.load(cache_path, allow_pickle=True).item()
     else:
         if (_path := query.get("path", None)) is not None:
-            path = f"imas:{backend}?path={_path};backend=hdf5"
+            uri = f"imas:{backend}?path={_path};backend=hdf5"
         else:
-            path = f"imas:{backend}?path={IMAS_DB_PREFIX}/{db}/{version}/{shot}/{run};backend=hdf5"
-        with DBEntry(uri=f"{path}", mode="r") as entry:
+            path = IMAS_DB_PREFIX / f"{db}/{version}/{shot}/{run}"
+            uri = f"imas:{backend}?path={path.as_posix()};backend=hdf5"
+        with DBEntry(uri=uri, mode="r") as entry:
             description2d = entry.partial_get("wall", "description_2d(0)")
             wall_outline = load_wall_2d(description2d)
             if cache:
