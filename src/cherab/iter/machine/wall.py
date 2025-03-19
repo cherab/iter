@@ -21,12 +21,11 @@ from rich.table import Table
 from cherab.imas.ids.common import get_ids_time_slice
 from cherab.imas.ids.wall import load_wall_2d, load_wall_3d
 
-from ..utils import get_cache_path
+from ..utils import IMAS_DB_PREFIX, get_cache_path
 
 __all__ = ["load_pfc_mesh", "load_wall_outline", "load_wall_absorber", "show_registries"]
 
 # Default ITER IMAS quaries
-PREFIX = "/work/imas/shared/imasdb/"
 PFC_QUERIES = {
     "first_wall": {
         "db": "ITER_MD",
@@ -259,7 +258,8 @@ def load_pfc_mesh(
                         path = f"imas:{backend}?path={_path};backend=hdf5"
                     else:
                         path = (
-                            f"imas:{backend}?path={PREFIX}/{db}/{version}/{shot}/{run};backend=hdf5"
+                            f"imas:{backend}?"
+                            f"path={IMAS_DB_PREFIX}/{db}/{version}/{shot}/{run};backend=hdf5"
                         )
                     entry = DBEntry(uri=path, mode="r")
                     meshes[mesh_name] = _load_wall_mesh(entry, parent).values()
@@ -373,7 +373,7 @@ def load_wall_outline(
         if (_path := query.get("path", None)) is not None:
             path = f"imas:{backend}?path={_path};backend=hdf5"
         else:
-            path = f"imas:{backend}?path={PREFIX}/{db}/{version}/{shot}/{run};backend=hdf5"
+            path = f"imas:{backend}?path={IMAS_DB_PREFIX}/{db}/{version}/{shot}/{run};backend=hdf5"
         with DBEntry(uri=f"{path}", mode="r") as entry:
             description2d = entry.partial_get("wall", "description_2d(0)")
             wall_outline = load_wall_2d(description2d)
