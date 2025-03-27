@@ -1,0 +1,21 @@
+version: 2
+
+build:
+  os: ubuntu-lts-latest
+  tools:
+    python: latest
+  jobs:
+    create_environment:
+    - asdf plugin add pixi
+    - asdf install pixi latest
+    - asdf global pixi latest
+    install:
+    - pixi auth login prefix.dev --token $PREFIX_DEV_TOKEN
+    - pixi install -e docs
+    - pixi list -e docs
+    build:
+      html:
+      - pixi run doc-build
+    post_build:
+    - mkdir -p $READTHEDOCS_OUTPUT/html/
+    - cp -r docs/build/html/* $READTHEDOCS_OUTPUT/html/
