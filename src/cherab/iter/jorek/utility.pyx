@@ -239,7 +239,7 @@ def py_fourier_mode(double phi, int index, int periodicity = 1) -> float:
         This is the python wrapper for the Cython function :func:`fourier_mode`.
         If you are using this function in a loop, consider using the Cython function directly.
 
-    Fourier modes :math:`Z_l(\\varphi)` coraponding to the different mode indices :math:`l` with
+    Fourier modes :math:`Z_l(\\varphi)` corresponding to the different mode indices :math:`l` with
     :math:`n_\\mathrm{p}` as periodicity of the simulation are defined as:
 
     .. math::
