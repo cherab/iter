@@ -179,6 +179,11 @@ plotly = "*"
 data-dictionary = "4.0.*"
 imas = "*"
 
+# For script execution
+xarray = "*"
+netcdf4 = ">=1.7.2,<2"
+pyvista = ">=0.44.2,<0.45"
+
 [tool.pixi.host-dependencies]
 python = "3.12.*"
 hatchling = "*"
@@ -199,6 +204,13 @@ no-build-isolation = ["cherab-iter"]
 jupyterlab = "*"
 ipython = "*"
 ipywidgets = "*"
+xarray = "*"
+python-kaleido = "*"
+pyvista = "*"
+trame = "*"
+trame-vtk = "*"
+trame-vuetify = "*"
+trame-pvui = "*"
 
 [tool.pixi.feature.lab.tasks]
 run-jupyterlab = { cmd = [
