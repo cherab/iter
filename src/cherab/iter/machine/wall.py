@@ -21,7 +21,7 @@ from rich.table import Table
 from cherab.imas.ids.common import get_ids_time_slice
 from cherab.imas.ids.wall import load_wall_2d, load_wall_3d
 
-from ..utils import IMAS_DB_PREFIX, get_cache_path
+from ..utility import BACKEND, IMAS_DB_PREFIX, get_cache_path
 
 __all__ = ["load_pfc_mesh", "load_wall_outline", "load_wall_absorber", "show_registries"]
 
@@ -105,7 +105,7 @@ def load_pfc_mesh(
     parent: _NodeBase | None = None,
     quiet: bool = False,
     cache: bool = True,
-    backend: str = "uda",
+    backend: BACKEND = "uda",
 ) -> dict[str, Mesh]:
     """Load the ITER PFC meshes from IMAS database.
 
@@ -144,7 +144,7 @@ def load_pfc_mesh(
     cache : bool, optional
         Whether to cache the ``*.rsm`` mesh data, by default `True`.
         If already cached, the data will be loaded from the cache.
-    backend : {"hdf5", "mdsplus", "uda", "memory"}, optional
+    backend : {"hdf5", "uda"}, optional
         The IMAS backend to use, by default `"uda"`.
 
     Returns
@@ -319,7 +319,7 @@ def _load_wall_mesh(entry: DBEntry, parent: _NodeBase | None) -> dict[str, Mesh]
 
 def load_wall_outline(
     custom_wall_query: dict[str, dict[str, int]] | None = None,
-    backend: str = "uda",
+    backend: BACKEND = "uda",
     cache: bool = True,
 ) -> dict[str, np.ndarray]:
     """Load the ITER wall outline from IMAS.
@@ -337,7 +337,7 @@ def load_wall_outline(
                 "path": "/work/imas/shared/imasdb/ITER_MD/3/116000/5",
             }
         `path` key is optional. If provided, it is prioritized over the other keys.
-    backend : {"hdf5", "mdsplus", "uda", "memory"}, optional
+    backend : {"hdf5", "uda"}, optional
         The IMAS backend to use, by default `"uda"`.
     cache : bool, optional
         Whether to cache the wall outline data, by default `True`.
