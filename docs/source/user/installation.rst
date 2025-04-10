@@ -51,11 +51,11 @@ Afterwards, you can install `cherab-iter` by following three steps:
 
     git clone https://github.com/cherab/iter.git
 
-2. Enter the repository directory:
+2. Enter the repository directory::
 
     cd iter
 
-3. Install the package:
+3. Install the package::
 
     pixi install
 
