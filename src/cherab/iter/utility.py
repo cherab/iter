@@ -1,6 +1,7 @@
 """Utility functions for the CHERAB-ITER module."""
 
 from pathlib import Path
+from typing import Literal
 
 from platformdirs import user_cache_path
 
@@ -8,7 +9,13 @@ __all__ = ["get_cache_path", "IMAS_DB_PREFIX"]
 
 
 IMAS_DB_PREFIX = Path("/work/imas/shared/imasdb/")
-"""Path: The prefix for the IMAS database path."""
+"""Path: The prefix for the IMAS database path.
+
+In the case of the ITER SDCC, this is typically set to `/work/imas/shared/imasdb/`.
+"""
+
+BACKEND = Literal["hdf5", "uda"]
+"""Literal: The supported backends for the IMAS database."""
 
 
 def get_cache_path(path: str) -> Path:

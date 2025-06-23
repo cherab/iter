@@ -28,13 +28,13 @@ repos:
 
 # validate pyproject.toml
 - repo: https://github.com/abravalheri/validate-pyproject
-  rev: v0.23
+  rev: v0.24.1
   hooks:
   - id: validate-pyproject
 
 # lint and format python codes by ruff
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.9.10
+  rev: v0.11.11
   hooks:
   - id: ruff
     args: [--fix]
@@ -65,7 +65,7 @@ repos:
 
 # format docstrings in python codes
 - repo: https://github.com/PyCQA/docformatter
-  rev: v1.7.5
+  rev: v1.7.7
   hooks:
   - id: docformatter
     additional_dependencies: [tomli]
