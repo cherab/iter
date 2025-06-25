@@ -11,6 +11,7 @@ from imas import DBEntry
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 
+from cherab.imas.ggd.unstruct_2d_extend_mesh import UnstructGrid2DExtended
 from cherab.imas.ids.common.ggd import load_grid as _load_grid
 
 from ..utility import BACKEND, IMAS_DB_PREFIX, get_cache_path
@@ -34,7 +35,7 @@ def load_grid(
     in_wall: bool = True,
     cache: bool = True,
     quiet: bool = False,
-):
+) -> UnstructGrid2DExtended:
     """Load the JOREK grid from the IMAS database.
 
     Parameters
