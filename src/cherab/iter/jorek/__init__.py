@@ -1,7 +1,7 @@
-"""Subpackage for handling JOREK dataset stored in IMAS.
+"""Subpackage for handling JOREK datasets stored in IMAS.
 
-This subpackage provides a set of tools to handle JOREK dataset stored in IMAS and creates a raysect
-or cherab object from the data.
+This subpackage provides tools for working with JOREK datasets stored in IMAS and for creating
+Raysect or Cherab objects from the data.
 """
 
 import pickle
@@ -17,7 +17,7 @@ from ..utility import BACKEND, IMAS_DB_PREFIX, get_cache_path
 
 __all__ = ["IDS_QUERY", "load_grid"]
 
-# Default ITER IMAS quaries
+# Default ITER IMAS queries
 IDS_QUERY = {
     "db": "ITER_DISRUPTIONS",
     "shot": 113113,
@@ -27,7 +27,7 @@ IDS_QUERY = {
 
 
 def load_grid(
-    custom_imas_queries: dict[str, str | int] | None = None,
+    custom_imas_query: dict[str, str | int] | None = None,
     backend: BACKEND = "uda",
     ids: str = "radiation",
     num_toroidal: int | None = None,
@@ -35,34 +35,43 @@ def load_grid(
     cache: bool = True,
     quiet: bool = False,
 ):
-    """Load the JOREK grid from IMAS database.
+    """Load the JOREK grid from the IMAS database.
 
     Parameters
     ----------
-    custom_imas_queries : dict[str, str | int] | None, optional
-        Custom IMAS queries to override the default ones, by default None.
+    custom_imas_query : dict[str, str | int] | None, optional
+        Custom IMAS query parameters to override the defaults.
+        Example:
+            custom_imas_query = {
+                "db": "ITER_DISRUPTIONS",
+                "shot": 113113,
+                "run": 2,
+                "version": 4,
+                "path": "/work/imas/shared/imasdb/ITER_DISRUPTIONS/4/113113/2",
+            }
+        The `path` key is optional. If provided, it takes precedence over other keys.
     backend : {"uda", "hdf5"}, optional
-        The backend to use for loading the data, by default "uda".
+        The backend to use for loading the data. Default is "uda".
     ids : str, optional
-        The IMAS IDs to load grid, by default "radiation".
+        The IMAS IDS to load the grid from. Default is "radiation".
     num_toroidal : int | None, optional
-        The number of toroidal resolution to extend, by default 64.
+        The number of toroidal segments to extend. Default is 64.
     in_wall : bool, optional
-        If True, only load the grid cells that are inside the machine wall, by default True.
+        If True, only grid cells inside the machine wall are loaded. Default is True.
     cache : bool, optional
-        If True and the grid is already cached, load it from the cache instead of IMAS,
-        else if True and the grid is not cached, save it to the cache after loading from IMAS,
-        otherwise load it from IMAS every time, by default True.
+        If True and the grid is already cached, load it from the cache.
+        If True and the grid is not cached, save it to the cache after loading from IMAS.
+        If False, always load from IMAS. Default is True.
     quiet : bool, optional
-        If True, suppress the console output, by default False.
+        If True, suppress console output. Default is False.
 
     Returns
     -------
-    `cherab.imas.ggd.unstruct_2d_extend_mesh.UnstructGrid2DExtended`
-        The loaded Unstructured 2D grid object.
+    `~cherab.imas.ggd.unstruct_2d_extend_mesh.UnstructGrid2DExtended`
+        The loaded unstructured 2D grid object.
     """
-    if custom_imas_queries is not None:
-        query = IDS_QUERY | custom_imas_queries
+    if custom_imas_query is not None:
+        query = IDS_QUERY | custom_imas_query
     else:
         query = IDS_QUERY
 
@@ -143,15 +152,15 @@ def load_grid(
             from ..machine.wall import load_wall_outline
 
             progress.update(
-                task_id, description="Extracting grid only inside machine wall", refresh=True
+                task_id, description="Extracting grid cells inside the machine wall", refresh=True
             )
 
-            # Create a mask to detect if 2D points are inside the machine wall
+            # Create a mask to determine if 2D points are inside the machine wall
             wall_outline = load_wall_outline()
             wall_outline = np.vstack((wall_outline["First Wall"], wall_outline["Divertor"][::-1]))
             mask = PolygonMask2D(np.ascontiguousarray(wall_outline))
 
-            # Detect if the cells' centers are inside the wall
+            # Determine if the cells' centers are inside the wall
             cell_centres = grid.cell_centre[: grid.num_faces, :]
             r_coords = np.hypot(cell_centres[:, 0], cell_centres[:, 1])
             z_coords = cell_centres[:, 2]
