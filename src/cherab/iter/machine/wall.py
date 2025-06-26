@@ -10,6 +10,7 @@ from raysect.optical.library import RoughTungsten
 from raysect.optical.material import (
     AbsorbingSurface,  # type: ignore
     Material,  # type: ignore
+    NullMaterial,  # type: ignore
 )
 from raysect.primitive import Cylinder, Mesh, Subtract, Union
 from raysect.primitive.csg import CSGPrimitive
@@ -23,7 +24,13 @@ from cherab.imas.ids.wall import load_wall_2d, load_wall_3d
 
 from ..utility import BACKEND, IMAS_DB_PREFIX, get_cache_path
 
-__all__ = ["load_pfc_mesh", "load_wall_outline", "load_wall_absorber", "show_registries"]
+__all__ = [
+    "load_pfc_mesh",
+    "load_wall_outline",
+    "load_wall_absorber",
+    "load_outline_mesh",
+    "show_registries",
+]
 
 # Default ITER IMAS queries
 PFC_QUERIES = {
@@ -436,4 +443,76 @@ def load_wall_absorber(parent: _NodeBase | None = None, **kwargs) -> CSGPrimitiv
         parent=parent,
         material=AbsorbingSurface(),
         name="Absorbing Wall",
+    )
+
+
+def load_outline_mesh(
+    num_toroidal, parent=None, material=None, name="Wall Outline Surface", **kwargs
+) -> Mesh:
+    """Create a mesh from the wall outline.
+
+    This function generates a mesh representing the ITER wall outline, connecting the first wall and
+    divertor and extending it toroidally.
+
+    Parameters
+    ----------
+    parent : `~raysect.core.scenegraph._nodebase._NodeBase`, optional
+        Parent node in the Raysect scene-graph.
+    material : `~raysect.optical.material.Material`, optional
+        Material of the mesh. Default is `~raysect.optical.material.material.NullMaterial`.
+    name : str, optional
+        The name of the mesh. Default is `"Wall Outline Surface"`.
+
+    Returns
+    -------
+    `~raysect.primitive.mesh.mesh.Mesh`
+        Wall outline mesh.
+    """
+    if not isinstance(num_toroidal, int) or num_toroidal <= 0:
+        raise ValueError("num_toroidal must be a positive integer.")
+
+    if material is None:
+        material = NullMaterial()
+
+    # Load the wall outline
+    outlines = load_wall_outline(**kwargs)
+    outline = np.vstack((outlines["First Wall"], outlines["Divertor"][::-1]))
+
+    num_polygon = outline.shape[0]
+    vertices = np.empty((num_polygon * num_toroidal, 3))
+    triangles = np.empty((num_polygon * 2 * num_toroidal, 3), dtype=int)
+
+    # Create vertices for the mesh
+    for i_phi in range(num_toroidal):
+        phi = i_phi * 2 * np.pi / num_toroidal
+
+        vertices[i_phi * num_polygon : (i_phi + 1) * num_polygon, 0] = outline[:, 0] * np.cos(phi)
+        vertices[i_phi * num_polygon : (i_phi + 1) * num_polygon, 1] = outline[:, 0] * np.sin(phi)
+        vertices[i_phi * num_polygon : (i_phi + 1) * num_polygon, 2] = outline[:, 1]
+
+    # Create indices for the triangles
+    indices = np.arange(num_polygon * num_toroidal, dtype=int).reshape((num_toroidal, num_polygon))
+    indices = np.pad(indices, ((0, 1), (0, 1)), mode="wrap")
+
+    i_tri = 0
+    for i, j in np.ndindex(num_toroidal, num_polygon):
+        triangles[i_tri, 0] = indices[i, j]
+        triangles[i_tri, 1] = indices[i + 1, j]
+        triangles[i_tri, 2] = indices[i + 1, j + 1]
+
+        i_tri += 1
+
+        triangles[i_tri, 0] = indices[i, j]
+        triangles[i_tri, 1] = indices[i + 1, j + 1]
+        triangles[i_tri, 2] = indices[i, j + 1]
+
+        i_tri += 1
+
+    return Mesh(
+        vertices=vertices,
+        triangles=triangles,
+        closed=True,
+        parent=parent,
+        material=material,
+        name=name,
     )
