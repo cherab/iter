@@ -197,7 +197,7 @@ cherab-iter = { path = ".", editable = true }
 cherab-imas = { git = "https://github.com/munechika-koyo/cherab-imas.git", rev = "1482340d2f6d27c1dc5258b03b329698fb1f7dc5" }
 
 [tool.pixi.pypi-options]
-no-build-isolation = ["cherab-iter"]
+no-build-isolation = ["cherab-imas", "cherab-iter"]
 
 # === Jupter Lab environment ===
 [tool.pixi.feature.lab.dependencies]
