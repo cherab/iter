@@ -50,11 +50,7 @@ source = "vcs"
 # ----------------------------
 [tool.hatch.build.targets.wheel]
 packages = ["src/cherab"]
-artifacts = [
-  "*.so",
-  "*.dll",
-  "*.dylib",
-]
+artifacts = ["*.so", "*.pyd", "*.dylib"]
 exclude = ["*.pyx", "cherab/iter/__init__.pxd"]
 
 [tool.hatch.build.targets.wheel.shared-data]
@@ -164,20 +160,19 @@ platforms = ["linux-64", "osx-arm64", "osx-64"]
 
 [tool.pixi.activation.env]
 # UDA environment variables
-UDA_PORT="56565"
-UDA_HOST="uda.iter.org"
-UDA_CLIENT_SSL_KEY="$PIXI_PROJECT_ROOT/.uda/private.key"
-UDA_CLIENT_CA_SSL_CERT="$PIXI_PROJECT_ROOT/.uda/ca-server-certificate.pem"
-UDA_CLIENT_SSL_CERT="$PIXI_PROJECT_ROOT/.uda/certificate.pem"
-UDA_CLIENT_SSL_AUTHENTICATE="1"
+UDA_PORT = "56565"
+UDA_HOST = "uda.iter.org"
+UDA_CLIENT_SSL_KEY = "$PIXI_PROJECT_ROOT/.uda/private.key"
+UDA_CLIENT_CA_SSL_CERT = "$PIXI_PROJECT_ROOT/.uda/ca-server-certificate.pem"
+UDA_CLIENT_SSL_CERT = "$PIXI_PROJECT_ROOT/.uda/certificate.pem"
+UDA_CLIENT_SSL_AUTHENTICATE = "1"
 
 [tool.pixi.dependencies]
 platformdirs = "*"
 rich = "*"
 cherab = "*"
 plotly = "*"
-data-dictionary = "4.0.*"
-imas = "*"
+imas-python = "2.0.*"
 
 # For script execution
 xarray = "*"
@@ -185,7 +180,7 @@ netcdf4 = ">=1.7.2,<2"
 pyvista = ">=0.44.2,<0.45"
 
 [tool.pixi.host-dependencies]
-python = "3.12.*"
+python = "3.13.*"
 hatchling = "*"
 hatch-vcs = "*"
 hatch-cython = ">=0.6.0rc0"
@@ -199,7 +194,7 @@ cherab-imas = { git = "https://github.com/munechika-koyo/cherab-imas.git", rev =
 [tool.pixi.pypi-options]
 no-build-isolation = ["cherab-imas", "cherab-iter"]
 
-# === Jupter Lab environment ===
+# === Jupyter Lab environment ===
 [tool.pixi.feature.lab.dependencies]
 jupyterlab = "*"
 ipython = "*"
@@ -242,27 +237,27 @@ sphinx-github-style = "*"
 
 [tool.pixi.feature.docs.tasks]
 doc-build = { cmd = [
-    "sphinx-build",
-    "-b",
-    "html",
-    "-j",
-    "auto",
-    "docs/source",
-    "docs/build/html",
+  "sphinx-build",
+  "-b",
+  "html",
+  "-j",
+  "auto",
+  "docs/source",
+  "docs/build/html",
 ], description = "📝 Build the docs" }
 doc-clean = { cmd = [
-    "rm",
-    "-rf",
-    "docs/build",
-    "docs/source/_api",
+  "rm",
+  "-rf",
+  "docs/build",
+  "docs/source/_api",
 ], description = "🔥 Clean the docs build & api directory" }
 doc-serve = { cmd = [
-    "python",
-    "-m",
-    "http.server",
-    "8000",
-    "--directory",
-    "docs/build/html",
+  "python",
+  "-m",
+  "http.server",
+  "8000",
+  "--directory",
+  "docs/build/html",
 ], description = "🚀 Start a local server for the docs" }
 
 # === Test environment ===
@@ -275,26 +270,29 @@ test = { cmd = ["pytest", "tests"], description = "🧪 Run the tests" }
 
 # === Lint/Format environment ===
 [tool.pixi.feature.lint.dependencies]
+dprint = "*"
+lefthook = "*"
 ruff = "*"
+typos = "*"
 mypy = "*"
-pre-commit = "*"
+numpydoc = "*"
+actionlint = "*"
+shellcheck = "*"
+validate-pyproject = "*"
+cython-lint = "*"
+docformatter = "*"
+blacken-docs = "*"
+taplo = "*"
 
 [tool.pixi.feature.lint.tasks]
-lint = { cmd = "ruff check", description = "🧹 Lint the code" }
-format = { cmd = "ruff check --fix", description = "🎨 Format the code" }
-pre-commit-run = { cmd = [
-    "pre-commit",
-    "run",
-    "--all-files",
-], description = "🩺 Run the all pre-commit hooks", depends-on = [
-    "pre-commit-install",
-] }
-pre-commit-install = { cmd = [
-    "pre-commit",
-    "install",
-], description = "🔗 Install pre-commit hooks" }
+lefthook = { cmd = "lefthook", description = "🔗 Run lefthook" }
+hooks = { cmd = "lefthook install", description = "🔗 Install pre-commit hooks" }
+pre-commit = { cmd = "lefthook run pre-commit", description = "🔗 Run pre-commit checks" }
+lint = { cmd = "lefthook run pre-commit --all-files --force", description = "🧹 Run all linters" }
 
-
+# -------------------------
+# === Pixi environments ===
+# -------------------------
 [tool.pixi.environments]
 lab = { features = ["lab"], solve-group = "default" }
 docs = { features = ["docs"], solve-group = "default" }
