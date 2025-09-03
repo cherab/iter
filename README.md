@@ -72,8 +72,10 @@ The documentation will be available at [Read the Docs][docs].
 
 This project is licensed under the terms of the [EUPL-1.1][license].
 
-[ci]: https://github.com/munechika-koyo/cherab_lhd/actions/workflows/ci.yaml
-[ci-badge]: https://img.shields.io/github/actions/workflow/status/munechika-koyo/cherab_lhd/ci.yaml?style=flat-square&logo=GitHub&label=CI
+[ci]: https://github.com/cherab/iter/actions/workflows/ci.yaml
+[ci-badge]: https://img.shields.io/github/actions/workflow/status/cherab/iter/ci.yaml?style=flat-square&logo=GitHub&label=CI
+[codecov]: https://codecov.io/github/cherab/iter
+[codecov-badge]: https://img.shields.io/codecov/c/github/cherab/iter?token=05LZGWUUXA&style=flat-square&logo=codecov
 [conda]: https://prefix.dev/channels/conda-forge/packages/cherab-iter
 [conda-badge]: https://img.shields.io/conda/vn/conda-forge/cherab-iter?logo=conda-forge&style=flat-square
 [docs]: https://cherab-iter.readthedocs.io/en/latest/?badge=latest
