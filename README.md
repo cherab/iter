@@ -2,14 +2,14 @@
 
 |         |                                                                                                                     |
 | ------- | ------------------------------------------------------------------------------------------------------------------- |
-| CI/CD   | [![pre-commit.ci status][pre-commit-ci-badge]][pre-commit-ci] [![PyPI Publish][pypi-publish-badge]][pypi-publish]   |
+| CI/CD   | [![CI][ci-badge]][ci] [![PyPI Publish][PyPI-publish-badge]][PyPi-publish] [![codecov][codecov-badge]][codecov]      |
 | Docs    | [![Documentation Status][docs-badge]][docs]                                                                         |
 | Package | [![PyPI - Version][pypi-badge]][pypi] [![Conda][conda-badge]][conda] [![PyPI - Python Version][python-badge]][pypi] |
 | Meta    | [![License - EUPL-1.1][license-badge]][license] [![Pixi Badge][pixi-badge]][pixi-url]                               |
 
-______________________________________________________________________
+---
 
-CHERAB-ITER; the CHERAB subpacakge for the ITER tokamak.
+CHERAB-ITER; the CHERAB subpackage for the ITER tokamak.
 
 ## 🔧 Get started for Developers
 
@@ -72,6 +72,8 @@ The documentation will be available at [Read the Docs][docs].
 
 This project is licensed under the terms of the [EUPL-1.1][license].
 
+[ci]: https://github.com/munechika-koyo/cherab_lhd/actions/workflows/ci.yaml
+[ci-badge]: https://img.shields.io/github/actions/workflow/status/munechika-koyo/cherab_lhd/ci.yaml?style=flat-square&logo=GitHub&label=CI
 [conda]: https://prefix.dev/channels/conda-forge/packages/cherab-iter
 [conda-badge]: https://img.shields.io/conda/vn/conda-forge/cherab-iter?logo=conda-forge&style=flat-square
 [docs]: https://cherab-iter.readthedocs.io/en/latest/?badge=latest
@@ -80,8 +82,6 @@ This project is licensed under the terms of the [EUPL-1.1][license].
 [license-badge]: https://img.shields.io/badge/license-EUPL_1.1%20-blue?style=flat-square
 [pixi-badge]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/prefix-dev/pixi/main/assets/badge/v0.json&style=flat-square
 [pixi-url]: https://pixi.sh
-[pre-commit-ci]: https://results.pre-commit.ci/latest/github/cherab/iter/main
-[pre-commit-ci-badge]: https://results.pre-commit.ci/badge/github/cherab/iter/main.svg
 [pypi]: https://pypi.org/project/cherab-iter/
 [pypi-badge]: https://img.shields.io/pypi/v/cherab-iter?label=PyPI&logo=pypi&logoColor=gold&style=flat-square
 [pypi-publish]: https://github.com/cherab/iter/actions/workflows/deploy-pypi.yml
