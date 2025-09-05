@@ -51,7 +51,7 @@ source = "vcs"
 [tool.hatch.build.targets.wheel]
 packages = ["src/cherab"]
 artifacts = ["*.so", "*.pyd", "*.dylib"]
-exclude = ["*.pyx", "cherab/iter/__init__.pxd"]
+exclude = ["*.pyx", "cherab/__init__.pxd"]
 
 [tool.hatch.build.targets.wheel.shared-data]
 "share/cherab/demos/iter" = "demos/*"
