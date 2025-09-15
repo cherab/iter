@@ -141,5 +141,8 @@ cython_debug/
 # PyCharm
 .idea/
 
+# typestubs
+typings/
+
 # UDA credentials file
 .uda/
