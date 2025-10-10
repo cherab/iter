@@ -47,8 +47,9 @@ cdef class PhysicalValuesConstructor:
 
     Parameters
     ----------
-    grid_ggd : object
-        The grid geometry data object that contains the space objects.
+    grid_ggd : IDSStructure
+        The grid GGD `~imas.ids_structure.IDSStructure` containing the `space`
+        `~imas.ids_struct_array.IDSStructArray`.
     coefficients : array_like, optional
         The coefficients of the physical quantity.
 
@@ -203,10 +204,10 @@ cdef class PhysicalValuesConstructor:
         (I, K, J, L) ndarray
             The coefficients of the physical quantity.
 
-            | L is the number of faces in the RZ grid.
-            | K is the number of vertices in one face, by default 4.
-            | J is the number of degrees of freedom in one vertex, by default 4.
-            | K is the number of toroidal fourier modes.
+            :L: the number of faces in the RZ grid,
+            :K: the number of vertices in one face, by default 4,
+            :J: the number of degrees of freedom in one vertex, by default 4,
+            :K: the number of toroidal fourier modes.
         """
         return np.asarray(self._coefficients)
 
@@ -236,9 +237,9 @@ cdef class PhysicalValuesConstructor:
         (I, K, J) ndarray
             The scale factors for each face.
 
-            | I is the number of faces in the RZ grid.
-            | K is the number of vertices in one face, by default 4.
-            | J is the number of degrees of freedom in one vertex, by default 4.
+            :I: the number of faces in the RZ grid,
+            :K: the number of vertices in one face, by default 4,
+            :J: the number of degrees of freedom in one vertex, by default 4.
         """
         return np.asarray(self._scale_factors)
 
@@ -251,9 +252,9 @@ cdef class PhysicalValuesConstructor:
         (M, 2, J) ndarray
             The coefficients of the vertices in the RZ grid.
 
-            | M is the number of vertices in the RZ grid.
-            | 2 is the number of coordinates :math:`(R, Z)`.
-            | J is the number of degrees of freedom for each vertex, by default 4.
+            :M: the number of vertices in the RZ grid,
+            :2: the number of coordinates :math:`(R, Z)`,
+            :J: the number of degrees of freedom for each vertex, by default 4.
         """
         return np.asarray(self._vertex_coefficients)
 
@@ -266,8 +267,8 @@ cdef class PhysicalValuesConstructor:
         (I, K) ndarray
             The indices of the vertices in the RZ grid.
 
-            | I is the number of faces in the RZ grid.
-            | K is the number of vertices in one face, by default 4.
+            :I: the number of faces in the RZ grid,
+            :K: the number of vertices in one face, by default 4,
         """
         return np.asarray(self._vertex_indices)
 
@@ -665,8 +666,8 @@ cdef class PhysicalValuesConstructor:
         (N, M) ndarray
             The integrated value of the physical quantity over all faces for each toroidal angle.
 
-            | N is the number of toroidal angles.
-            | M is the number of faces in the RZ grid.
+            :N: the number of toroidal angles.
+            :M: the number of faces in the RZ grid.
         """
         cdef:
             int i_face, i_phi

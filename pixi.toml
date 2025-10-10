@@ -28,8 +28,7 @@ cython = ">=3.1,<4"
 cherab = "1.5.*"
 
 [package.run-dependencies]
-cherab-imas = { git = "https://github.com/cherab/imas.git", branch = "development" }
-imas-core = "*"
+cherab-imas = { git = "https://github.com/cherab/imas.git", branch = "develop" }
 platformdirs = "*"
 rich = "*"
 plotly = "*"
@@ -68,10 +67,10 @@ UDA_CLIENT_SSL_AUTHENTICATE = "1"
 [tasks]
 ipython = { cmd = "ipython", description = "🐍 Start an IPython shell" }
 lab = { cmd = [
-    "jupyter",
-    "lab",
-    "--notebook-dir",
-    "demos",
+  "jupyter",
+  "lab",
+  "--notebook-dir",
+  "demos",
 ], description = "🚀 Run JupyterLab" }
 
 # === Tests feature ===
@@ -104,27 +103,29 @@ sphinx-github-style = "*"
 
 [feature.docs.tasks]
 doc-build = { cmd = [
-    "sphinx-build",
-    "-b",
-    "html",
-    "-j",
-    "auto",
-    "source",
-    "build/html",
-], cwd = "docs", description = "📝 Build the docs" }
+  "sphinx-build",
+  "-b",
+  "{{ target }}",
+  "-j",
+  "auto",
+  "source",
+  "build/{{ target }}",
+], cwd = "docs", args = [
+  { arg = "target", default = "html" },
+], description = "📝 Build the docs" }
 doc-clean = { cmd = [
-    "rm",
-    "-rf",
-    "build",
-    "source/_api",
+  "rm",
+  "-rf",
+  "build",
+  "source/_api",
 ], cwd = "docs", description = "🔥 Clean the docs build & api directory" }
 doc-serve = { cmd = [
-    "python",
-    "-m",
-    "http.server",
-    "8000",
-    "--directory",
-    "build/html",
+  "python",
+  "-m",
+  "http.server",
+  "8000",
+  "--directory",
+  "build/html",
 ], cwd = "docs", description = "🚀 Start a local server for the docs" }
 
 # === Linting feature ===
@@ -161,7 +162,7 @@ docs = { features = ["py313", "docs"], solve-group = "py313" }
 tests = { features = ["py313", "tests"], solve-group = "py313" }
 tests-py310 = ["py310", "tests"]
 tests-py313 = { features = [
-    "py313",
-    "tests",
+  "py313",
+  "tests",
 ], solve-group = "py313" } # alias of tests
 lint = { features = ["lint"], no-default-feature = true }
