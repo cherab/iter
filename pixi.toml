@@ -40,10 +40,6 @@ plotly = "*"
 cherab-iter = { path = "." }
 ipython = "*"
 
-# For bolometer data loading in DD v4.1+
-[pypi-dependencies]
-imas-data-dictionary = { git = "https://github.com/iterorganization/IMAS-Data-Dictionary.git", rev = "5180c827041e13ee9e78ad1c714f2f6f1ea874f0" }
-
 # For notebook demos
 jupyterlab = "*"
 ipywidgets = "*"
@@ -57,6 +53,11 @@ trame-pvui = "*"
 hvplot = ">=0.11.2,<0.12"
 jupyter_bokeh = ">=4.0.5,<5"
 panel = ">=1.6.2,<2"
+python-kaleido = "*"
+
+# For bolometer data loading in DD v4.1+
+[pypi-dependencies]
+imas-data-dictionary = { git = "https://github.com/iterorganization/IMAS-Data-Dictionary.git", rev = "5180c827041e13ee9e78ad1c714f2f6f1ea874f0" }
 
 [activation.env]
 # UDA environment variables
