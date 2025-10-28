@@ -429,15 +429,15 @@ def load_wall_absorber(parent: _NodeBase | None = None, **kwargs) -> CSGPrimitiv
     zmax *= 1.10
     thickness = 0.1
     r_out = rmax + thickness
-    hight_in = zmax - zmin
-    hight_out = hight_in + thickness * 2
+    height_in = zmax - zmin
+    height_out = height_in + thickness * 2
 
     # Create the absorbing wall and return it
     return Union(
-        Cylinder(rmin, hight_out),
+        Cylinder(rmin, height_out),
         Subtract(
-            Cylinder(r_out, hight_out),
-            Cylinder(rmax, hight_in, transform=translate(0, 0, thickness)),
+            Cylinder(r_out, height_out),
+            Cylinder(rmax, height_in, transform=translate(0, 0, thickness)),
         ),
         transform=translate(0, 0, zmin - thickness),
         parent=parent,
