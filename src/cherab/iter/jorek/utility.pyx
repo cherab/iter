@@ -157,8 +157,8 @@ def py_bezier_basis(s: float, t: float) -> np.ndarray:
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def py_bezier_basis_derivative_wrt_s(s: float, t: float) -> np.ndarray:
-    """Calculate the derivative of the bezier basis with respect to :math:`s`
-    for each node and degree of freedom.
+    """Calculate the derivative of the bezier basis with respect to :math:`s` for each node and
+    degree of freedom.
 
     .. note::
         This is the python wrapper for the Cython function :func:`bezier_basis_derivative_wrt_s`.
@@ -196,8 +196,8 @@ def py_bezier_basis_derivative_wrt_s(s: float, t: float) -> np.ndarray:
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def py_bezier_basis_derivative_wrt_t(s: float, t: float) -> np.ndarray:
-    """Calculate the derivative of the bezier basis with respect to :math:`t`
-    for each node and degree of freedom.
+    """Calculate the derivative of the bezier basis with respect to :math:`t` for each node and
+    degree of freedom.
 
     .. note::
         This is the python wrapper for the Cython function :func:`bezier_basis_derivative_wrt_t`.
