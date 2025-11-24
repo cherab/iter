@@ -120,9 +120,11 @@ doc-build = { cmd = [
 doc-clean = { cmd = [
   "rm",
   "-rf",
-  "build",
+  "build/{{ target }}",
   "source/_api",
-], cwd = "docs", description = "🔥 Clean the docs build & api directory" }
+], cwd = "docs", args = [
+  { arg = "target", default = "html" },
+], description = "🔥 Clean the docs build & api directory" }
 doc-serve = { cmd = [
   "python",
   "-m",
