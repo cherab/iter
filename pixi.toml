@@ -55,10 +55,6 @@ jupyter_bokeh = ">=4.0.5,<5"
 panel = ">=1.6.2,<2"
 python-kaleido = "*"
 
-# For bolometer data loading in DD v4.1+
-[pypi-dependencies]
-imas-data-dictionary = { git = "https://github.com/iterorganization/IMAS-Data-Dictionary.git", rev = "5180c827041e13ee9e78ad1c714f2f6f1ea874f0" }
-
 [activation.env]
 # UDA environment variables
 UDA_PORT = "56565"
@@ -165,8 +161,6 @@ taplo = { cmd = "taplo fmt", description = "Format toml files with taplo" }
 actionlint = { cmd = "actionlint", description = "Lint actions with actionlint" }
 blacken-docs = { cmd = "blacken-docs", description = "Format Python markdown blocks with Black" }
 validate-pyproject = { cmd = "validate-pyproject pyproject.toml", description = "Validate pyproject.toml" }
-numpydoc = { cmd = "numpydoc lint", description = "Validate docstrings with numpydoc" }
-docformatter = { cmd = "docformatter --in-place", description = "Format docstrings with docformatter" }
 cython-lint = { cmd = "cython-lint", description = "Lint Cython files" }
 lint = { cmd = "lefthook run pre-commit --all-files --force", description = "🧹 Run all linters" }
 
