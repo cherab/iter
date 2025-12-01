@@ -35,10 +35,10 @@ pre-commit:
         piped: true
         jobs:
           - name: ruff check
-            run: pixi {run} ruff check --fix {staged_files}
+            run: pixi {run} ruff-check {staged_files}
             stage_fixed: true
           - name: ruff format
-            run: pixi {run} ruff format {staged_files}
+            run: pixi {run} ruff-format {staged_files}
             stage_fixed: true
 
     # - name: pyright
@@ -65,19 +65,6 @@ pre-commit:
     - name: validate-pyproject
       glob: "pyproject.toml"
       run: pixi {run} validate-pyproject {staged_files}
-
-    - name: docstring-lint
-      group:
-        piped: true
-        jobs:
-          - name: docformatter
-            glob: "*.{py,pyx,pyi}"
-            run: pixi {run} docformatter --in-place {staged_files}
-            stage_fixed: true
-          - name: numpydoc
-            glob: "*.{py,pyi}"
-            run: pixi {run} numpydoc {staged_files}
-            stage_fixed: true
 
     - name: cython-lint
       glob: "*.{pyx,pxd}"
