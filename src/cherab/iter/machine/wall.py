@@ -1,16 +1,17 @@
-"""This module provides functions to load ITER PFC meshes from the IMAS database."""
+"""Provide functions to load ITER PFC meshes from the IMAS database."""
 
 from __future__ import annotations
 
 import numpy as np
-from imas import DBEntry
+from imas.db_entry import DBEntry
+from numpy.typing import NDArray
 from raysect.core.math import translate
-from raysect.core.scenegraph._nodebase import _NodeBase  # type: ignore
+from raysect.core.scenegraph._nodebase import _NodeBase  # pyright: ignore[reportPrivateUsage]
 from raysect.optical.library import RoughTungsten
 from raysect.optical.material import (
-    AbsorbingSurface,  # type: ignore
-    Material,  # type: ignore
-    NullMaterial,  # type: ignore
+    AbsorbingSurface,
+    Material,
+    NullMaterial,
 )
 from raysect.primitive import Cylinder, Mesh, Subtract, Union
 from raysect.primitive.csg import CSGPrimitive
@@ -20,7 +21,8 @@ from rich.progress import Progress, SpinnerColumn
 from rich.table import Table
 
 from cherab.imas.ids.common import get_ids_time_slice
-from cherab.imas.ids.wall import load_wall_2d, load_wall_3d
+from cherab.imas.ids.wall import load_wall_3d
+from cherab.imas.wall import load_wall_outline as imas_load_wall_outline
 
 from ..utility import BACKEND, IMAS_DB_PREFIX, get_cache_path
 
@@ -106,7 +108,7 @@ def show_registries() -> None:
 
 def load_pfc_mesh(
     custom_imas_queries: dict[str, dict[str, int]] | None = None,
-    custom_material: dict[str, tuple[Material, float | None]] | None = None,
+    custom_material: dict[str, tuple[Material, float | None]] | Material | None = None,
     reflection: bool = False,
     is_fine_mesh: bool = False,
     parent: _NodeBase | None = None,
@@ -118,7 +120,7 @@ def load_pfc_mesh(
 
     Parameters
     ----------
-    custom_imas_queries : dict[str, dict[str, int]], optional
+    custom_imas_queries
         Custom IMAS queries. Default is `None`.
         You can provide a custom query, for example:
             custom_imas_queries = {
@@ -132,26 +134,30 @@ def load_pfc_mesh(
                 },
             }
         The `path` key is optional and, if provided, takes precedence over other keys.
-    custom_material : dict[str, tuple[Material, float | None]], optional
+    custom_material
         Custom material mapping. Default is `None`.
         For example:
             custom_material = {
                 "first_wall": (RoughTungsten, 0.29),
             }
-        The last value is the material roughness. If `None`, the material will be
+        The last value is the material roughness.
+        If a single `Material` instance is provided, it will be used for all components,
+        for example:
+            custom_material = NullMaterial()
+        If `None`, the material will be
         `~raysect.optical.material.absorber.AbsorbingSurface`.
-    reflection : bool, optional
+    reflection
         Whether to use reflective materials. Default is `False` (absorbing).
-    is_fine_mesh : bool, optional
+    is_fine_mesh
         Whether to load the fine mesh for the first wall. Default is `False`.
-    parent : `~raysect.core.scenegraph._nodebase._NodeBase` | None, optional
+    parent
         Parent node in the Raysect scene-graph. Default is `None`.
-    quiet : bool, optional
+    quiet
         If `True`, suppresses output. Default is `False`.
-    cache : bool, optional
+    cache
         If `True`, caches the ``*.rsm`` mesh data. Default is `True`.
         If cached data exists, it will be loaded from the cache.
-    backend : {"hdf5", "uda"}, optional
+    backend
         IMAS backend to use. Default is `"uda"`.
 
     Returns
@@ -187,7 +193,10 @@ def load_pfc_mesh(
         queries = PFC_QUERIES
 
     # Merge user-defined materials with default materials
-    if custom_material is not None:
+    if isinstance(custom_material, Material):
+        materials = {key: (custom_material, None) for key in queries.keys()}
+
+    elif isinstance(custom_material, dict):
         materials = MAP_MATERIALS | custom_material
     else:
         materials = MAP_MATERIALS
@@ -328,12 +337,12 @@ def load_wall_outline(
     custom_wall_query: dict[str, dict[str, int]] | None = None,
     backend: BACKEND = "uda",
     cache: bool = True,
-) -> dict[str, np.ndarray]:
+) -> dict[str, NDArray[np.float64]]:
     """Load the ITER wall outline from IMAS.
 
     Parameters
     ----------
-    custom_wall_query : dict[str, dict[str, int]], optional
+    custom_wall_query
         Custom wall outline query. Default is `None`.
         You can provide a custom query, for example:
             custom_wall_query = {
@@ -344,15 +353,15 @@ def load_wall_outline(
                 "path": "/work/imas/shared/imasdb/ITER_MD/3/116000/5",
             }
         The `path` key is optional and, if provided, takes precedence over other keys.
-    backend : {"hdf5", "uda"}, optional
+    backend
         IMAS backend to use. Default is `"uda"`.
-    cache : bool, optional
+    cache
         If `True`, caches the wall outline data. Default is `True`.
         If cached data exists, it will be loaded from the cache.
 
     Returns
     -------
-    dict[str, numpy.ndarray]
+    `dict[str, NDArray[np.float64]]`
         Dictionary containing the wall outline data.
 
     Examples
@@ -381,11 +390,13 @@ def load_wall_outline(
         else:
             path = IMAS_DB_PREFIX / f"{db}/{version}/{shot}/{run}"
             uri = f"imas:{backend}?path={path.as_posix()};backend=hdf5"
-        with DBEntry(uri=uri, mode="r") as entry:
-            description2d = entry.partial_get("wall", "description_2d(0)")
-            wall_outline = load_wall_2d(description2d)
-            if cache:
-                np.save(cache_path, wall_outline)
+
+        # Load wall outline from IMAS
+        wall_outline = imas_load_wall_outline(uri, "r")
+
+        # Cache the wall outline
+        if cache:
+            np.save(cache_path, wall_outline)
 
     return wall_outline
 
@@ -398,7 +409,7 @@ def load_wall_absorber(parent: _NodeBase | None = None, **kwargs) -> CSGPrimitiv
 
     Parameters
     ----------
-    parent : `~raysect.core.scenegraph._nodebase._NodeBase`, optional
+    parent
         The parent node in the Raysect scene-graph.
     **kwargs
         Additional keyword arguments to pass to `.load_wall_outline`.
@@ -447,7 +458,11 @@ def load_wall_absorber(parent: _NodeBase | None = None, **kwargs) -> CSGPrimitiv
 
 
 def load_outline_mesh(
-    num_toroidal, parent=None, material=None, name="Wall Outline Surface", **kwargs
+    num_toroidal: int,
+    parent: _NodeBase | None = None,
+    material: None | Material = None,
+    name: str = "Wall Outline Surface",
+    **kwargs,
 ) -> Mesh:
     """Create a mesh from the wall outline.
 
@@ -456,17 +471,24 @@ def load_outline_mesh(
 
     Parameters
     ----------
-    parent : `~raysect.core.scenegraph._nodebase._NodeBase`, optional
+    num_toroidal
+        Number of toroidal segments to create.
+    parent
         Parent node in the Raysect scene-graph.
-    material : `~raysect.optical.material.Material`, optional
+    material
         Material of the mesh. Default is `~raysect.optical.material.material.NullMaterial`.
-    name : str, optional
-        The name of the mesh. Default is `"Wall Outline Surface"`.
+    name
+        Name of the mesh. Default is `"Wall Outline Surface"`.
 
     Returns
     -------
     `~raysect.primitive.mesh.mesh.Mesh`
         Wall outline mesh.
+
+    Raises
+    ------
+    ValueError
+        If `num_toroidal` is not a positive integer.
     """
     if not isinstance(num_toroidal, int) or num_toroidal <= 0:
         raise ValueError("num_toroidal must be a positive integer.")
