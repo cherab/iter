@@ -152,6 +152,7 @@ known-first-party = ["cherab"]
   "DOC",
 ] # no newline at end of file and skip docstring checks
 "tests/**" = ["D", "DOC"] # skip docstring checks in tests
+"docs/**" = ["D", "DOC"] # skip docstring checks in docs
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
