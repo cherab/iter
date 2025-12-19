@@ -1,11 +1,5 @@
 [build-system]
-requires = [
-  "hatchling",
-  "hatch-vcs",
-  "hatch-cython>=0.6.0rc0",
-  "numpy",
-  "cherab-imas",
-]
+requires = ["hatch-cython>=0.6.0", "hatch-vcs", "numpy", "cherab-imas"]
 build-backend = "hatchling.build"
 
 [project]
