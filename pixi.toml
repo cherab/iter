@@ -1,5 +1,5 @@
 [workspace]
-channels = ["https://prefix.dev/conda-forge"]
+channels = ["conda-forge"]
 platforms = ["osx-arm64", "osx-64", "linux-64"]
 preview = ["pixi-build"]
 
@@ -16,7 +16,7 @@ backend = { name = "pixi-build-python", version = "*" }
 noarch = false
 
 [workspace.build-variants]
-python = ["3.10.*", "3.11.*", "3.12.*", "3.13.*"]
+python = ["3.10.*", "3.11.*", "3.12.*", "3.13.*", "3.14.*"]
 
 [package.host-dependencies]
 uv = "*"
@@ -27,7 +27,7 @@ cython = ">=3.1,<4"
 cherab = "1.5.*"
 
 [package.run-dependencies]
-cherab-imas = { git = "https://github.com/cherab/imas.git", branch = "develop" }
+cherab-imas = "*"
 platformdirs = "*"
 rich = "*"
 plotly = "*"
@@ -53,6 +53,9 @@ hvplot = ">=0.11.2,<0.12"
 jupyter_bokeh = ">=4.0.5,<5"
 panel = ">=1.6.2,<2"
 python-kaleido = "*"
+
+# Publication-quality plotting
+ultraplot = ">=1.72.0"
 
 [activation.env]
 # UDA environment variables
@@ -82,23 +85,23 @@ test = { cmd = ["pytest", "tests"], description = "🧪 Run the tests" }
 
 # === Docs feature ===
 [feature.docs.dependencies]
+sphinx = ">=7,<8.2"
+sphinx-copybutton = "*"
+sphinx-codeautolink = "*"
+sphinx-design = "*"
+sphinx-immaterial = "*"
+linkify-it-py = "*"
+myst-parser = "*"
+
+# For notebook support
 ipykernel = "*"
 ipywidgets = "*"
-nbconvert = "*"
 nbsphinx = "*"
-numpydoc = "*"
-pillow = "*"
-pygments = ">2.11.0"
-sphinx = ">=8.2.2,<9"
-sphinx-copybutton = "*"
-pydata-sphinx-theme = "*"
-sphinx-design = "*"
 pandoc = "*"
-sphinx-codeautolink = "*"
-python-kaleido = "*"
 
 [feature.docs.pypi-dependencies]
 sphinx-github-style = "*"
+sphinx-api-relink = "*"
 
 [feature.docs.tasks]
 doc-build = { cmd = [
@@ -137,12 +140,10 @@ ruff = "*"
 typos = "*"
 mypy = "*"
 pyrefly = "*"
-numpydoc = "*"
 actionlint = "*"
 shellcheck = "*"
 validate-pyproject = "*"
 cython-lint = "*"
-docformatter = "*"
 blacken-docs = "*"
 taplo = "*"
 
@@ -163,19 +164,24 @@ validate-pyproject = { cmd = "validate-pyproject pyproject.toml", description = 
 cython-lint = { cmd = "cython-lint", description = "Lint Cython files" }
 lint = { cmd = "lefthook run pre-commit --all-files --force", description = "🧹 Run all linters" }
 
+[feature.tools.tasks]
+# Clean build artifacts
+clean = { cmd = "find src -type f \\( -name '*.c' -o -name '*.so' -o -name '*.pyd' -o -name '*.dll' \\) -delete", description = "🧹 Clean build artifacts" }
+
 # === Python environment features ===
 [feature.py310.dependencies]
 python = "3.10.*"
-[feature.py313.dependencies]
-python = "3.13.*"
+[feature.py314.dependencies]
+python = "3.14.*"
 
 [environments]
-default = { features = ["py313"], solve-group = "py313" }
-docs = { features = ["py313", "docs"], solve-group = "py313" }
-test = { features = ["py313", "test"], solve-group = "py313" }
+default = { features = ["py314"], solve-group = "py314" }
+docs = { features = ["py314", "docs"], solve-group = "py314" }
+test = { features = ["py314", "test"], solve-group = "py314" }
 test-py310 = ["py310", "test"]
-test-py313 = { features = [
-  "py313",
+test-py314 = { features = [
+  "py314",
   "test",
-], solve-group = "py313" } # alias of test
-lint = { features = ["lint"], no-default-feature = true }
+], solve-group = "py314" } # alias of test
+lint = ["lint", "test"]
+tools = { features = ["tools"], no-default-feature = true }
