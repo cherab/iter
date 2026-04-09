@@ -1,5 +1,5 @@
 [workspace]
-channels = ["conda-forge"]
+channels = ["conda-forge", "https://prefix.dev/imas-forge"]
 platforms = ["osx-arm64", "osx-64", "linux-64"]
 preview = ["pixi-build"]
 
@@ -38,6 +38,7 @@ plotly = "*"
 [dependencies]
 cherab-iter = { path = "." }
 ipython = "*"
+imas-core = "*"
 
 # For notebook demos
 jupyterlab = "*"
