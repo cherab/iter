@@ -1,13 +1,10 @@
 """Provide functions to load ITER PFC meshes from the IMAS database."""
 
-from __future__ import annotations
-
 import numpy as np
-from imas.db_entry import DBEntry
+from imas import DBEntry
 from numpy.typing import NDArray
 from raysect.core.math import translate
-from raysect.core.scenegraph._nodebase import _NodeBase  # pyright: ignore[reportPrivateUsage]
-from raysect.optical.library import RoughTungsten
+from raysect.core.scenegraph._nodebase import _NodeBase
 from raysect.optical.material import (
     AbsorbingSurface,
     Material,
@@ -20,11 +17,16 @@ from rich.live import Live
 from rich.progress import Progress, SpinnerColumn
 from rich.table import Table
 
-from cherab.imas.ids.common import get_ids_time_slice
-from cherab.imas.ids.wall import load_wall_3d
+from cherab.imas.wall import load_wall_mesh
 from cherab.imas.wall import load_wall_outline as imas_load_wall_outline
 
 from ..utility import BACKEND, IMAS_DB_PREFIX, get_cache_path
+from ._registries import (
+    MAP_MATERIALS,
+    PFC_QUERIES,
+    WALL_OUTLINE_QUERY,
+    IMASQuery,
+)
 
 __all__ = [
     "load_pfc_mesh",
@@ -33,45 +35,6 @@ __all__ = [
     "load_outline_mesh",
     "show_registries",
 ]
-
-# Default ITER IMAS queries
-PFC_QUERIES = {
-    "first_wall": {
-        "db": "ITER_MD",
-        "shot": 116100,
-        "run": 1001,
-        "version": 3,
-        "skip": False,
-    },
-    "divertor": {
-        "db": "ITER_MD",
-        "shot": 116100,
-        "run": 2001,
-        "version": 3,
-    },
-    "first_wall_fine": {
-        "db": "ITER_MD",
-        "shot": 116100,
-        "run": 3001,
-        "version": 3,
-        "skip": True,
-    },
-}
-
-WALL_OUTLINE_QUERY = {
-    "db": "ITER_MD",
-    "shot": 116000,
-    "run": 5,
-    "version": 3,
-}
-
-ROUGHNESS_W = 0.29
-
-# Default material map
-MAP_MATERIALS = {
-    "first_wall": (AbsorbingSurface, None),
-    "divertor": (RoughTungsten, ROUGHNESS_W),
-}
 
 
 def show_registries() -> None:
@@ -99,7 +62,11 @@ def show_registries() -> None:
     queries = PFC_QUERIES | dict(wall_outline=WALL_OUTLINE_QUERY)
     for name, query in queries.items():
         table.add_row(
-            name, query["db"], str(query["shot"]), str(query["run"]), str(query["version"])
+            name,
+            str(query.get("db", "")),
+            str(query.get("shot", "")),
+            str(query.get("run", "")),
+            str(query.get("version", "")),
         )
 
     console = Console()
@@ -107,8 +74,8 @@ def show_registries() -> None:
 
 
 def load_pfc_mesh(
-    custom_imas_queries: dict[str, dict[str, int]] | None = None,
-    custom_material: dict[str, tuple[Material, float | None]] | Material | None = None,
+    custom_imas_queries: dict[str, IMASQuery] | None = None,
+    custom_material: dict[str, Material] | Material | None = None,
     reflection: bool = False,
     is_fine_mesh: bool = False,
     parent: _NodeBase | None = None,
@@ -125,6 +92,7 @@ def load_pfc_mesh(
         You can provide a custom query, for example:
             custom_imas_queries = {
                 "first_wall": {
+                    "name": "FullTokamak.none.none",
                     "db": "ITER_MD",
                     "shot": 116100,
                     "run": 1001,
@@ -138,16 +106,16 @@ def load_pfc_mesh(
         Custom material mapping. Default is `None`.
         For example:
             custom_material = {
-                "first_wall": (RoughTungsten, 0.29),
+                "first_wall": RoughTungsten(0.29),
             }
-        The last value is the material roughness.
         If a single `Material` instance is provided, it will be used for all components,
         for example:
             custom_material = NullMaterial()
-        If `None`, the material will be
-        `~raysect.optical.material.absorber.AbsorbingSurface`.
+        If `None`, the material will be determined by the default mapping defined in `MAP_MATERIALS`.
     reflection
-        Whether to use reflective materials. Default is `False` (absorbing).
+        Whether to use reflective materials, by default `False` (absorbing).
+        If `False`, all materials will be set to `AbsorbingSurface()` regardless of the default
+        mapping or custom material provided.
     is_fine_mesh
         Whether to load the fine mesh for the first wall. Default is `False`.
     parent
@@ -155,7 +123,9 @@ def load_pfc_mesh(
     quiet
         If `True`, suppresses output. Default is `False`.
     cache
-        If `True`, caches the ``*.rsm`` mesh data. Default is `True`.
+        If `True`, ``*.rsm`` mesh data will be stored. Default is `True`.
+        The data will be stored in the cache directory defined by `.get_cache_path` with the same
+        IMAS query structure, for example: `~/.cache/iter/ITER_MD/3/116100/1001/mesh.rsm`.
         If cached data exists, it will be loaded from the cache.
     backend
         IMAS backend to use. Default is `"uda"`.
@@ -164,6 +134,11 @@ def load_pfc_mesh(
     -------
     dict[str, `~raysect.primitive.mesh.mesh.Mesh`]
         Dictionary of PFC meshes.
+
+    Raises
+    ------
+    ValueError
+        If `custom_material` or `custom_imas_queries` are not expected values.
 
     Examples
     --------
@@ -192,14 +167,27 @@ def load_pfc_mesh(
     else:
         queries = PFC_QUERIES
 
-    # Merge user-defined materials with default materials
+    # ------------------------
+    # === Define materials ===
+    # ------------------------
+    materials: dict[str, Material] = {}
     if isinstance(custom_material, Material):
-        materials = {key: (custom_material, None) for key in queries.keys()}
-
-    elif isinstance(custom_material, dict):
-        materials = MAP_MATERIALS | custom_material
+        materials = {key: custom_material for key in queries.keys()}
     else:
-        materials = MAP_MATERIALS
+        if isinstance(custom_material, dict):
+            materials = MAP_MATERIALS | custom_material
+            for key, value in materials.items():
+                if not isinstance(value, Material):
+                    raise ValueError(
+                        f"Invalid material for {key}: {value}. Must be a Material instance."
+                    )
+        elif custom_material is None:
+            materials = MAP_MATERIALS
+        else:
+            raise ValueError("custom_material must be either a Material instance, a dict, or None.")
+
+    if not reflection:
+        materials = {key: AbsorbingSurface() for key in materials.keys()}
 
     # Update the first wall query if the fine mesh is requested
     if is_fine_mesh:
@@ -225,8 +213,11 @@ def load_pfc_mesh(
     else:
         progress_group = Group(progress)
 
-    # Load meshes
-    meshes = {}
+    # -----------------------
+    # === Load PFC Meshes ===
+    # -----------------------
+    meshes: dict[str, Mesh] = {}
+    uri = "N/A"
     with Live(progress_group, auto_refresh=True, console=Console(quiet=quiet)) as live:
         for mesh_name, query in queries.items():
             # Skip if the mesh is not requested
@@ -237,34 +228,18 @@ def load_pfc_mesh(
             progress.update(task_id, description=progress_text)
             live.refresh()
             try:
-                # ================================
-                # Configure material
-                # ================================
-                material_cls, roughness = materials[mesh_name]
-                if not reflection:
-                    material_cls = AbsorbingSurface
-                    roughness = None
-
-                if roughness is not None:
-                    material = material_cls(roughness=roughness)
-                else:
-                    material = material_cls()
-
-                # ================================
-                # Load PFC Meshes
-                # ================================
                 db, shot, run, version = (
                     query["db"],
                     query["shot"],
                     query["run"],
                     query["version"],
                 )
-                cache_path = get_cache_path(f"machine/{mesh_name}_{shot}_{run}_{db}_{version}.rsm")
+                cache_path = get_cache_path(f"{db}/{version}/{shot}/{run}/mesh.rsm")
                 if cache and cache_path.exists():
                     progress.update(task_id, description=f"{progress_text} (from cache)")
                     live.refresh()
                     meshes[mesh_name] = Mesh.from_file(
-                        cache_path, parent=parent, material=material, name=mesh_name
+                        cache_path, parent=parent, material=materials[mesh_name], name=mesh_name
                     )
                     uri = str(cache_path)
                 else:
@@ -276,8 +251,14 @@ def load_pfc_mesh(
                         path = IMAS_DB_PREFIX / f"{db}/{version}/{shot}/{run}"
                         uri = f"imas:{backend}?path={path.as_posix()};backend=hdf5"
 
-                    entry = DBEntry(uri=uri, mode="r")
-                    meshes[mesh_name] = _load_wall_mesh(entry, parent).values()
+                    meshes = load_wall_mesh(
+                        uri,
+                        "r",
+                        parent=parent,
+                        materials={query["name"]: materials[mesh_name]},
+                    )
+
+                    meshes = {mesh_name: meshes[query["name"]]}  # Keep only the requested mesh
 
                     # Cache the mesh
                     if cache:
@@ -289,11 +270,13 @@ def load_pfc_mesh(
                 _status = f"❌ ({e})"
             finally:
                 if not quiet:
-                    table.add_row(
+                    roughness = getattr(materials[mesh_name], "roughness", None)
+
+                    table.add_row(  # type: ignore
                         mesh_name,
                         uri,
-                        material_cls.__name__,
-                        str(roughness),
+                        materials[mesh_name].__class__.__name__,
+                        str(roughness) if roughness is not None else "N/A",
                         _status,
                     )
                 progress.advance(task_id)
@@ -304,37 +287,8 @@ def load_pfc_mesh(
     return meshes
 
 
-def _load_wall_mesh(entry: DBEntry, parent: _NodeBase | None) -> dict[str, Mesh]:
-    """Load the ITER wall mesh from the IMAS database.
-
-    Parameters
-    ----------
-    entry : `~imas.db_entry.DBEntry`
-        The IMAS database entry.
-    parent : `~raysect.core.scenegraph._nodebase._NodeBase` | None
-        The parent node in the Raysect scene-graph.
-
-    Returns
-    -------
-    dict[str, `~raysect.primitive.mesh.mesh.Mesh`]
-        Dictionary of wall mesh components.
-    """
-    wall_ids = get_ids_time_slice(entry, "wall")
-    wall_dict = load_wall_3d(wall_ids.description_ggd[0])
-
-    components = {}
-
-    for key, value in wall_dict.items():
-        mesh = Mesh(value["vertices"], value["triangles"], closed=False)
-        mesh.parent = parent
-        mesh.name = key
-        components[key] = mesh
-
-    return components
-
-
 def load_wall_outline(
-    custom_wall_query: dict[str, dict[str, int]] | None = None,
+    custom_wall_query: IMASQuery | None = None,
     backend: BACKEND = "uda",
     cache: bool = True,
 ) -> dict[str, NDArray[np.float64]]:
@@ -356,7 +310,9 @@ def load_wall_outline(
     backend
         IMAS backend to use. Default is `"uda"`.
     cache
-        If `True`, caches the wall outline data. Default is `True`.
+        If `True` and backend is `"uda"`, cache the wall ids data. Default is `True`.
+        The data will be stored in the cache directory defined by `.get_cache_path` with the same
+        IMAS query structure, for example: `~/.cache/iter/ITER_MD/3/116000/5/wall.h5`.
         If cached data exists, it will be loaded from the cache.
 
     Returns
@@ -381,9 +337,9 @@ def load_wall_outline(
 
     # Load wall outline
     db, shot, run, version = query["db"], query["shot"], query["run"], query["version"]
-    cache_path = get_cache_path(f"machine/wall_outline_{shot}_{run}_{db}_{version}.npy")
+    cache_path = get_cache_path(f"{db}/{version}/{shot}/{run}/wall.h5")
     if cache and cache_path.exists():
-        wall_outline = np.load(cache_path, allow_pickle=True).item()
+        uri = f"imas:hdf5?path={cache_path.parent.as_posix()}"
     else:
         if (_path := query.get("path", None)) is not None:
             uri = f"imas:{backend}?path={_path};backend=hdf5"
@@ -391,12 +347,21 @@ def load_wall_outline(
             path = IMAS_DB_PREFIX / f"{db}/{version}/{shot}/{run}"
             uri = f"imas:{backend}?path={path.as_posix()};backend=hdf5"
 
-        # Load wall outline from IMAS
-        wall_outline = imas_load_wall_outline(uri, "r")
+    # Load wall outline from IMAS
+    wall_outline = imas_load_wall_outline(uri, "r")
 
-        # Cache the wall outline
-        if cache:
-            np.save(cache_path, wall_outline)
+    # Cache the wall outline
+    if cache and backend == "uda" and not cache_path.exists():
+        path = IMAS_DB_PREFIX / f"{db}/{version}/{shot}/{run}"
+        uri = f"imas:{backend}?path={path.as_posix()};backend=hdf5"
+        with DBEntry(uri, "r") as entry:
+            ids = entry.get("wall", autoconvert=False)
+        with DBEntry(
+            f"imas:hdf5?path={cache_path.parent.as_posix()}",
+            "w",
+            dd_version=str(ids.ids_properties.version_put.data_dictionary),
+        ) as entry:
+            entry.put(ids)
 
     return wall_outline
 
