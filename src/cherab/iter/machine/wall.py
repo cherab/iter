@@ -264,6 +264,7 @@ def load_pfc_mesh(
 
                     # Cache the mesh
                     if cache and not has_path:
+                        cache_path.parent.mkdir(parents=True, exist_ok=True)
                         meshes[mesh_name].save(cache_path)
 
                 # Save the status of loading
