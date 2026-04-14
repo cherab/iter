@@ -74,8 +74,8 @@ def show_registries() -> None:
 
 
 def load_pfc_mesh(
-    custom_imas_queries: dict[str, IMASQuery] | None = None,
-    custom_material: dict[str, Material] | Material | None = None,
+    imas_queries: dict[str, IMASQuery] | None = None,
+    material: dict[str, Material] | Material | None = None,
     reflection: bool = False,
     is_fine_mesh: bool = False,
     parent: _NodeBase | None = None,
@@ -87,10 +87,10 @@ def load_pfc_mesh(
 
     Parameters
     ----------
-    custom_imas_queries
-        Custom IMAS queries. Default is `None`.
+    imas_queries
+        IMAS queries, by default is `None`.
         You can provide a custom query, for example:
-            custom_imas_queries = {
+            imas_queries = {
                 "first_wall": {
                     "name": "FullTokamak.none.none",
                     "db": "ITER_MD",
@@ -102,33 +102,33 @@ def load_pfc_mesh(
                 },
             }
         The `path` key is optional and, if provided, takes precedence over other keys.
-    custom_material
-        Custom material mapping. Default is `None`.
+    material
+        Material mapping, by default is `None`.
         For example:
-            custom_material = {
+            material = {
                 "first_wall": RoughTungsten(0.29),
             }
         If a single `Material` instance is provided, it will be used for all components,
         for example:
-            custom_material = NullMaterial()
+            material = NullMaterial()
         If `None`, the material will be determined by the default mapping defined in `.MAP_MATERIALS`.
     reflection
         Whether to use reflective materials, by default `False` (absorbing).
         If `False`, all materials will be set to `AbsorbingSurface()` regardless of the default
         mapping or custom material provided.
     is_fine_mesh
-        Whether to load the fine mesh for the first wall. Default is `False`.
+        Whether to load the fine mesh for the first wall, by default is `False`.
     parent
-        Parent node in the Raysect scene-graph. Default is `None`.
+        Parent node in the Raysect scene-graph, by default is `None`.
     quiet
-        If `True`, suppresses output. Default is `False`.
+        If `True`, suppresses output, by default is `False`.
     cache
-        If `True`, ``*.rsm`` mesh data will be stored. Default is `True`.
+        If `True`, ``*.rsm`` mesh data will be stored, by default is `True`.
         The data will be stored in the cache directory defined by `.get_cache_path` with the same
         IMAS query structure, for example: `~/.cache/iter/ITER_MD/3/116100/1001/mesh.rsm`.
         If cached data exists, it will be loaded from the cache.
     backend
-        IMAS backend to use. Default is `"uda"`.
+        IMAS backend to use, by default is `"uda"`.
 
     Returns
     -------
@@ -138,7 +138,7 @@ def load_pfc_mesh(
     Raises
     ------
     ValueError
-        If `custom_material` or `custom_imas_queries` are not expected values.
+        If `material` or `imas_queries` are not expected values.
 
     Examples
     --------
@@ -150,20 +150,20 @@ def load_pfc_mesh(
 
     .. code-block:: python
 
-        custom_imas_queries = {
+        imas_queries = {
             "first_wall": {
                 "path": "/path/to/database/",
             },
         }
         meshes = load_pfc_mesh(
-            custom_imas_queries=custom_imas_queries,
+            imas_queries=imas_queries,
             cache=False,
             backend="hdf5",
         )
     """
     # Merge user-defined queries with default queries
-    if custom_imas_queries is not None:
-        queries = PFC_QUERIES | custom_imas_queries
+    if imas_queries is not None:
+        queries = PFC_QUERIES | imas_queries
     else:
         queries = PFC_QUERIES
 
@@ -171,20 +171,20 @@ def load_pfc_mesh(
     # === Define materials ===
     # ------------------------
     materials: dict[str, Material] = {}
-    if isinstance(custom_material, Material):
-        materials = {key: custom_material for key in queries.keys()}
+    if isinstance(material, Material):
+        materials = {key: material for key in queries.keys()}
     else:
-        if isinstance(custom_material, dict):
-            materials = MAP_MATERIALS | custom_material
+        if isinstance(material, dict):
+            materials = MAP_MATERIALS | material
             for key, value in materials.items():
                 if not isinstance(value, Material):
                     raise ValueError(
                         f"Invalid material for {key}: {value}. Must be a Material instance."
                     )
-        elif custom_material is None:
+        elif material is None:
             materials = MAP_MATERIALS
         else:
-            raise ValueError("custom_material must be either a Material instance, a dict, or None.")
+            raise ValueError("`material` must be either a Material instance, a dict, or None.")
 
     if not reflection:
         materials = {key: AbsorbingSurface() for key in materials.keys()}
@@ -288,7 +288,7 @@ def load_pfc_mesh(
 
 
 def load_wall_outline(
-    custom_wall_query: IMASQuery | None = None,
+    imas_query: IMASQuery | None = None,
     backend: BACKEND = "uda",
     cache: bool = True,
 ) -> dict[str, NDArray[np.float64]]:
@@ -296,10 +296,10 @@ def load_wall_outline(
 
     Parameters
     ----------
-    custom_wall_query
-        Custom wall outline query. Default is `None`.
+    imas_query
+        IMAS query, by default is `None`.
         You can provide a custom query, for example:
-            custom_wall_query = {
+            imas_query = {
                 "db": "ITER_MD",
                 "pulse": 116000,
                 "run": 5,
@@ -308,9 +308,9 @@ def load_wall_outline(
             }
         The `path` key is optional and, if provided, takes precedence over other keys.
     backend
-        IMAS backend to use. Default is `"uda"`.
+        IMAS backend to use, by default is `"uda"`.
     cache
-        If `True` and backend is `"uda"`, cache the wall ids data. Default is `True`.
+        If `True` and backend is `"uda"`, cache the wall ids data, by default is `True`.
         The data will be stored in the cache directory defined by `.get_cache_path` with the same
         IMAS query structure, for example: `~/.cache/iter/ITER_MD/3/116000/5/wall.h5`.
         If cached data exists, it will be loaded from the cache.
@@ -324,14 +324,14 @@ def load_wall_outline(
     --------
     .. code-block:: python
 
-        custom_wall_query = {
+        imas_query = {
             "path": "/path/to/database/",
         }
-        wall_outline = load_wall_outline(custom_wall_query=custom_wall_query)
+        wall_outline = load_wall_outline(imas_query=imas_query)
     """
     # Update the default query with a custom one if provided
-    if custom_wall_query is not None:
-        query = WALL_OUTLINE_QUERY | custom_wall_query
+    if imas_query is not None:
+        query = WALL_OUTLINE_QUERY | imas_query
     else:
         query = WALL_OUTLINE_QUERY
 
