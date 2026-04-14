@@ -128,6 +128,7 @@ def load_bolometers(
     with progress:
         bolometers = imas_load_bolometers(uri, "r", parent=parent)
         progress.advance(task_id) if task_id is not None else None
+        progress.refresh()
 
     # Cache the bolometer data
     if cache and not cache_path.exists() and not has_path:
@@ -144,6 +145,7 @@ def load_bolometers(
                 entry.put(ids)
 
             progress.advance(task_id) if task_id is not None else None
+            progress.refresh()
 
     # Output the table of loaded cameras
     if not quiet:
@@ -178,4 +180,7 @@ class _DummyProgress:
         pass
 
     def advance(self, *args, **kwargs) -> None:
+        pass
+
+    def refresh(self) -> None:
         pass
