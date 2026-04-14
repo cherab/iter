@@ -16,7 +16,7 @@ __all__ = ["load_bolometers"]
 
 
 def load_bolometers(
-    custom_query: IMASQuery | None = None,
+    imas_query: IMASQuery | None = None,
     parent: _NodeBase | None = None,
     backend: BACKEND = "uda",
     cache: bool = True,
@@ -29,11 +29,11 @@ def load_bolometers(
 
     Parameters
     ----------
-    custom_query
-        Custom IMAS query to load the bolometer data. If None, the default query from
-        `OBSERVER_QUERIES` will be used.
+    imas_query
+        IMAS query to load the bolometer data, by default None.
+         If None, the default query from `.OBSERVER_QUERIES` will be used.
         You can also specify a custom query, for example:
-            custom_query = {
+            imas_query = {
                 "db": "ITER_MD",
                 "pulse": 150401,
                 "run": 4,
@@ -66,7 +66,7 @@ def load_bolometers(
     >>>
     >>> world = World()
     >>> bolos = load_bolometers(
-    ...     custom_query={"db": "ITER_MD", "pulse": 150401, "run": 4, "version": 4},
+    ...     imas_query={"db": "ITER_MD", "pulse": 150401, "run": 4, "version": 4},
     ...     parent=world,
     ...     backend="uda",
     ...     cache=True,
@@ -79,8 +79,8 @@ def load_bolometers(
      <cherab.tools.observers.bolometry.BolometerCamera at 0x1188fcac0>]
     """
     # Update the default query with a custom one if provided
-    if custom_query is not None:
-        query = OBSERVER_QUERIES["bolometer"] | custom_query
+    if imas_query is not None:
+        query = OBSERVER_QUERIES["bolometer"] | imas_query
     else:
         query = OBSERVER_QUERIES["bolometer"]
 
