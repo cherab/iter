@@ -18,13 +18,15 @@ BACKEND = Literal["hdf5", "uda"]
 """Literal: The supported backends for the IMAS database."""
 
 
-def get_cache_path(path: str) -> Path:
-    """Check if a specific path (file or directory) exists in the cache directory.
+def get_cache_path(path: str, mkdir: bool = False) -> Path:
+    """Get the full path to the file or directory in the cache directory.
 
     Parameters
     ----------
-    path : str
-        The path to check.
+    path
+        The path to the file or directory in the cache directory, relative to the cache directory.
+    mkdir
+        If `True`, create the directory if it does not exist.
 
     Returns
     -------
@@ -32,8 +34,9 @@ def get_cache_path(path: str) -> Path:
         The full path to the file or directory in the cache directory.
     """
     _path = user_cache_path("cherab/iter") / Path(path)
-    if _path.is_dir():
-        _path.mkdir(parents=True, exist_ok=True)
-    else:
-        _path.parent.mkdir(parents=True, exist_ok=True)
+    if mkdir:
+        if _path.is_dir():
+            _path.mkdir(parents=True, exist_ok=True)
+        else:
+            _path.parent.mkdir(parents=True, exist_ok=True)
     return _path
