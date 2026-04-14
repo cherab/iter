@@ -25,8 +25,8 @@ class IMASQuery(TypedDict):
     """
     db: NotRequired[str]
     """IMAS database to query."""
-    shot: NotRequired[int]
-    """IMAS shot number."""
+    pulse: NotRequired[int]
+    """IMAS pulse number."""
     run: NotRequired[int]
     """IMAS run number."""
     version: NotRequired[int]
@@ -44,7 +44,7 @@ PFC_QUERIES: dict[str, IMASQuery] = {
     "first_wall": {
         "name": "FullTokamak.none.none",
         "db": "ITER_MD",
-        "shot": 116100,
+        "pulse": 116100,
         "run": 1001,
         "version": 3,
         "skip": False,
@@ -52,14 +52,14 @@ PFC_QUERIES: dict[str, IMASQuery] = {
     "divertor": {
         "name": "Divertor.none.none",
         "db": "ITER_MD",
-        "shot": 116100,
+        "pulse": 116100,
         "run": 2001,
         "version": 3,
     },
     "first_wall_fine": {
         "name": "FullTokamak.none.none",
         "db": "ITER_MD",
-        "shot": 116100,
+        "pulse": 116100,
         "run": 3001,
         "version": 3,
         "skip": True,
@@ -68,7 +68,7 @@ PFC_QUERIES: dict[str, IMASQuery] = {
 
 WALL_OUTLINE_QUERY: IMASQuery = {
     "db": "ITER_MD",
-    "shot": 116000,
+    "pulse": 116000,
     "run": 5,
     "version": 3,
 }

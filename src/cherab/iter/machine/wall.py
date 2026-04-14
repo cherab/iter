@@ -44,7 +44,7 @@ def show_registries() -> None:
     --------
     >>> show_registries()
     ┏━━━━━━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━┳━━━━━━┳━━━━━━━━━┓
-    ┃ Name            ┃ Database ┃  Shot  ┃ Run  ┃ Version ┃
+    ┃ Name            ┃ Database ┃ Pulse  ┃ Run  ┃ Version ┃
     ┡━━━━━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━╇━━━━━━╇━━━━━━━━━┩
     │ first_wall      │ ITER_MD  │ 116100 │ 1001 │    3    │
     │ divertor        │ ITER_MD  │ 116100 │ 2001 │    3    │
@@ -55,7 +55,7 @@ def show_registries() -> None:
     table = Table(title="ITER IMAS Queries", show_footer=False)
     table.add_column("Name", justify="left", style="cyan")
     table.add_column("Database", justify="left", style="magenta")
-    table.add_column("Shot", justify="center", style="green")
+    table.add_column("Pulse", justify="center", style="green")
     table.add_column("Run", justify="center", style="yellow")
     table.add_column("Version", justify="center", style="blue")
 
@@ -64,7 +64,7 @@ def show_registries() -> None:
         table.add_row(
             name,
             str(query.get("db", "")),
-            str(query.get("shot", "")),
+            str(query.get("pulse", "")),
             str(query.get("run", "")),
             str(query.get("version", "")),
         )
@@ -94,7 +94,7 @@ def load_pfc_mesh(
                 "first_wall": {
                     "name": "FullTokamak.none.none",
                     "db": "ITER_MD",
-                    "shot": 116100,
+                    "pulse": 116100,
                     "run": 1001,
                     "version": 3,
                     "skip": False,
@@ -111,7 +111,7 @@ def load_pfc_mesh(
         If a single `Material` instance is provided, it will be used for all components,
         for example:
             custom_material = NullMaterial()
-        If `None`, the material will be determined by the default mapping defined in `MAP_MATERIALS`.
+        If `None`, the material will be determined by the default mapping defined in `.MAP_MATERIALS`.
     reflection
         Whether to use reflective materials, by default `False` (absorbing).
         If `False`, all materials will be set to `AbsorbingSurface()` regardless of the default
@@ -228,13 +228,13 @@ def load_pfc_mesh(
             progress.update(task_id, description=progress_text)
             live.refresh()
             try:
-                db, shot, run, version = (
+                db, pulse, run, version = (
                     query["db"],
-                    query["shot"],
+                    query["pulse"],
                     query["run"],
                     query["version"],
                 )
-                cache_path = get_cache_path(f"{db}/{version}/{shot}/{run}/mesh.rsm")
+                cache_path = get_cache_path(f"{db}/{version}/{pulse}/{run}/mesh.rsm")
                 if cache and cache_path.exists():
                     progress.update(task_id, description=f"{progress_text} (from cache)")
                     live.refresh()
@@ -248,7 +248,7 @@ def load_pfc_mesh(
                     if (_path := query.get("path", None)) is not None:
                         uri = f"imas:{backend}?path={_path};backend=hdf5"
                     else:
-                        path = IMAS_DB_PREFIX / f"{db}/{version}/{shot}/{run}"
+                        path = IMAS_DB_PREFIX / f"{db}/{version}/{pulse}/{run}"
                         uri = f"imas:{backend}?path={path.as_posix()};backend=hdf5"
 
                     meshes = load_wall_mesh(
@@ -301,7 +301,7 @@ def load_wall_outline(
         You can provide a custom query, for example:
             custom_wall_query = {
                 "db": "ITER_MD",
-                "shot": 116000,
+                "pulse": 116000,
                 "run": 5,
                 "version": 3,
                 "path": "/work/imas/shared/imasdb/ITER_MD/3/116000/5",
@@ -336,15 +336,15 @@ def load_wall_outline(
         query = WALL_OUTLINE_QUERY
 
     # Load wall outline
-    db, shot, run, version = query["db"], query["shot"], query["run"], query["version"]
-    cache_path = get_cache_path(f"{db}/{version}/{shot}/{run}/wall.h5")
+    db, pulse, run, version = query["db"], query["pulse"], query["run"], query["version"]
+    cache_path = get_cache_path(f"{db}/{version}/{pulse}/{run}/wall.h5")
     if cache and cache_path.exists():
         uri = f"imas:hdf5?path={cache_path.parent.as_posix()}"
     else:
         if (_path := query.get("path", None)) is not None:
             uri = f"imas:{backend}?path={_path};backend=hdf5"
         else:
-            path = IMAS_DB_PREFIX / f"{db}/{version}/{shot}/{run}"
+            path = IMAS_DB_PREFIX / f"{db}/{version}/{pulse}/{run}"
             uri = f"imas:{backend}?path={path.as_posix()};backend=hdf5"
 
     # Load wall outline from IMAS
@@ -352,7 +352,7 @@ def load_wall_outline(
 
     # Cache the wall outline
     if cache and backend == "uda" and not cache_path.exists():
-        path = IMAS_DB_PREFIX / f"{db}/{version}/{shot}/{run}"
+        path = IMAS_DB_PREFIX / f"{db}/{version}/{pulse}/{run}"
         uri = f"imas:{backend}?path={path.as_posix()};backend=hdf5"
         with DBEntry(uri, "r") as entry:
             ids = entry.get("wall", autoconvert=False)
