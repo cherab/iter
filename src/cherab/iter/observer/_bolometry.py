@@ -50,7 +50,11 @@ def load_bolometers(
         If True, the bolometer IDS will be cached locally after loading, and subsequent calls with
         the same query parameters will load from the cache instead of querying the IMAS database,
         by default True.
-        The cache directory is determined by `.get_cache_path` function
+        The cache directory determined by `.get_cache_path` function looks like
+        `~/.cherab/cache/imas/ITER_MD/4/150401/4/`.
+        If the `path` parameter is provided in the `imas_query`, caching will be disabled because
+        some of the query parameters (e.g. `db`, `version`, `pulse`, `run`) may not be relevant to
+        the provided path, and caching may lead to incorrect results.
     quiet
         If True, suppress the progress bar and table output when loading the bolometer cameras,
         by default False.
@@ -88,12 +92,14 @@ def load_bolometers(
     cache_path = get_cache_path(f"{db}/{version}/{pulse}/{run}/bolometer.h5")
 
     progress_text = "Loading bolometer cameras"
+    has_path = False
     if cache and cache_path.exists():
         uri = f"imas:hdf5?path={cache_path.parent.as_posix()}"
         progress_text += f" from cache ({uri})"
     else:
         if (_path := query.get("path", None)) is not None:
             uri = f"imas:{backend}?path={_path};backend=hdf5"
+            has_path = True
         else:
             path = IMAS_DB_PREFIX / f"{db}/{version}/{pulse}/{run}"
             uri = f"imas:{backend}?path={path.as_posix()};backend=hdf5"
@@ -124,7 +130,7 @@ def load_bolometers(
         progress.advance(task_id) if task_id is not None else None
 
     # Cache the bolometer data
-    if cache and not cache_path.exists():
+    if cache and not cache_path.exists() and not has_path:
         if not quiet:
             progress = Progress(
                 SpinnerColumn(finished_text="✅"),

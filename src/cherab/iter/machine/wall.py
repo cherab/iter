@@ -245,7 +245,9 @@ def load_pfc_mesh(
                 else:
                     progress.update(task_id, description=f"{progress_text} (from IMAS database)")
                     live.refresh()
+                    has_path = False
                     if (_path := query.get("path", None)) is not None:
+                        has_path = True
                         uri = f"imas:{backend}?path={_path};backend=hdf5"
                     else:
                         path = IMAS_DB_PREFIX / f"{db}/{version}/{pulse}/{run}"
@@ -261,7 +263,7 @@ def load_pfc_mesh(
                     meshes = {mesh_name: meshes[query["name"]]}  # Keep only the requested mesh
 
                     # Cache the mesh
-                    if cache:
+                    if cache and not has_path:
                         meshes[mesh_name].save(cache_path)
 
                 # Save the status of loading
@@ -338,10 +340,12 @@ def load_wall_outline(
     # Load wall outline
     db, pulse, run, version = query["db"], query["pulse"], query["run"], query["version"]
     cache_path = get_cache_path(f"{db}/{version}/{pulse}/{run}/wall.h5")
+    has_path = False
     if cache and cache_path.exists():
         uri = f"imas:hdf5?path={cache_path.parent.as_posix()}"
     else:
         if (_path := query.get("path", None)) is not None:
+            has_path = True
             uri = f"imas:{backend}?path={_path};backend=hdf5"
         else:
             path = IMAS_DB_PREFIX / f"{db}/{version}/{pulse}/{run}"
@@ -351,7 +355,7 @@ def load_wall_outline(
     wall_outline = imas_load_wall_outline(uri, "r")
 
     # Cache the wall outline
-    if cache and backend == "uda" and not cache_path.exists():
+    if cache and not cache_path.exists() and not has_path:
         path = IMAS_DB_PREFIX / f"{db}/{version}/{pulse}/{run}"
         uri = f"imas:{backend}?path={path.as_posix()};backend=hdf5"
         with DBEntry(uri, "r") as entry:
