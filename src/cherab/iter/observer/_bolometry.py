@@ -89,20 +89,19 @@ def load_bolometers(
         query = OBSERVER_QUERIES["bolometer"]
 
     db, pulse, run, version = query["db"], query["pulse"], query["run"], query["version"]
+    path = query.get("path", None)
     cache_path = get_cache_path(f"{db}/{version}/{pulse}/{run}/bolometer.h5")
 
     progress_text = "Loading bolometer cameras"
-    has_path = False
-    if cache and cache_path.exists():
+    if cache and cache_path.exists() and not path:
         uri = f"imas:hdf5?path={cache_path.parent.as_posix()}"
         progress_text += f" from cache ({uri})"
     else:
-        if (_path := query.get("path", None)) is not None:
-            uri = f"imas:{backend}?path={_path};backend=hdf5"
-            has_path = True
+        if path is not None:
+            uri = f"imas:{backend}?path={path};backend=hdf5"
         else:
-            path = IMAS_DB_PREFIX / f"{db}/{version}/{pulse}/{run}"
-            uri = f"imas:{backend}?path={path.as_posix()};backend=hdf5"
+            _path = IMAS_DB_PREFIX / f"{db}/{version}/{pulse}/{run}"
+            uri = f"imas:{backend}?path={_path.as_posix()};backend=hdf5"
 
         progress_text += f" from IMAS database ({uri})"
 
@@ -131,21 +130,26 @@ def load_bolometers(
         progress.refresh()
 
     # Cache the bolometer data
-    if cache and not cache_path.exists() and not has_path:
+    if cache and not cache_path.exists() and path is not None:
         if not quiet:
-            progress = Progress(
+            progress_cache = Progress(
                 SpinnerColumn(finished_text="✅"),
                 TextColumn("[progress.description]{task.description}"),
             )
-            task_id = progress.add_task(f"Caching bolometer data into {cache_path.parent}", total=1)
-        with progress:
+            task_id = progress_cache.add_task(
+                f"Caching bolometer data into {cache_path.parent}", total=1
+            )
+        else:
+            progress_cache = _DummyProgress()
+            task_id = None
+        with progress_cache:
             with DBEntry(uri, "r") as entry:
                 ids = entry.get("bolometer", autoconvert=False)
             with DBEntry(f"imas:hdf5?path={cache_path.parent.as_posix()}", "w") as entry:
                 entry.put(ids)
 
-            progress.advance(task_id) if task_id is not None else None
-            progress.refresh()
+            progress_cache.advance(task_id) if task_id is not None else None
+            progress_cache.refresh()
 
     # Output the table of loaded cameras
     if not quiet:
