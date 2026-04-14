@@ -73,6 +73,10 @@ def load_bolometers(
     ...     quiet=True,
     ... )
     >>> bolos
+    [<cherab.tools.observers.bolometry.BolometerCamera at 0x118884890>,
+     <cherab.tools.observers.bolometry.BolometerCamera at 0x1188fcaa0>,
+     ...
+     <cherab.tools.observers.bolometry.BolometerCamera at 0x1188fcac0>]
     """
     # Update the default query with a custom one if provided
     if custom_query is not None:
