@@ -19,6 +19,7 @@ from rich.table import Table
 
 from cherab.imas.wall import load_wall_mesh
 from cherab.imas.wall import load_wall_outline as imas_load_wall_outline
+from cherab.tools.primitives import axisymmetric_mesh_from_polygon
 
 from ..utility import BACKEND, IMAS_DB_PREFIX, get_cache_path
 from ._registries import (
@@ -428,7 +429,7 @@ def load_wall_absorber(parent: _NodeBase | None = None, **kwargs) -> CSGPrimitiv
 
 
 def load_outline_mesh(
-    num_toroidal: int,
+    num_toroidal: int = 500,
     parent: _NodeBase | None = None,
     material: None | Material = None,
     name: str = "Wall Outline Surface",
@@ -437,7 +438,8 @@ def load_outline_mesh(
     """Create a mesh from the wall outline.
 
     This function generates a mesh representing the ITER wall outline, connecting the first wall and
-    divertor and extending it toroidally.
+    divertor and extending it toroidally using
+    `~cherab.tools.primitives.axisymmetric_mesh.axisymmetric_mesh_from_polygon`.
 
     Parameters
     ----------
@@ -449,6 +451,8 @@ def load_outline_mesh(
         Material of the mesh. Default is `~raysect.optical.material.material.NullMaterial`.
     name
         Name of the mesh. Default is `"Wall Outline Surface"`.
+    **kwargs
+        Additional keyword arguments to pass to `.load_wall_outline`.
 
     Returns
     -------
@@ -470,41 +474,9 @@ def load_outline_mesh(
     outlines = load_wall_outline(**kwargs)
     outline = np.vstack((outlines["First Wall"], outlines["Divertor"][::-1]))
 
-    num_polygon = outline.shape[0]
-    vertices = np.empty((num_polygon * num_toroidal, 3))
-    triangles = np.empty((num_polygon * 2 * num_toroidal, 3), dtype=int)
+    mesh = axisymmetric_mesh_from_polygon(outline, num_toroidal_segments=num_toroidal)
+    mesh.parent = parent
+    mesh.material = material
+    mesh.name = name
 
-    # Create vertices for the mesh
-    for i_phi in range(num_toroidal):
-        phi = i_phi * 2 * np.pi / num_toroidal
-
-        vertices[i_phi * num_polygon : (i_phi + 1) * num_polygon, 0] = outline[:, 0] * np.cos(phi)
-        vertices[i_phi * num_polygon : (i_phi + 1) * num_polygon, 1] = outline[:, 0] * np.sin(phi)
-        vertices[i_phi * num_polygon : (i_phi + 1) * num_polygon, 2] = outline[:, 1]
-
-    # Create indices for the triangles
-    indices = np.arange(num_polygon * num_toroidal, dtype=int).reshape((num_toroidal, num_polygon))
-    indices = np.pad(indices, ((0, 1), (0, 1)), mode="wrap")
-
-    i_tri = 0
-    for i, j in np.ndindex(num_toroidal, num_polygon):
-        triangles[i_tri, 0] = indices[i, j]
-        triangles[i_tri, 1] = indices[i + 1, j]
-        triangles[i_tri, 2] = indices[i + 1, j + 1]
-
-        i_tri += 1
-
-        triangles[i_tri, 0] = indices[i, j]
-        triangles[i_tri, 1] = indices[i + 1, j + 1]
-        triangles[i_tri, 2] = indices[i, j + 1]
-
-        i_tri += 1
-
-    return Mesh(
-        vertices=vertices,
-        triangles=triangles,
-        closed=True,
-        parent=parent,
-        material=material,
-        name=name,
-    )
+    return mesh
