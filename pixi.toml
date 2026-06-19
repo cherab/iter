@@ -19,7 +19,6 @@ noarch = false
 python = ["3.10.*", "3.11.*", "3.12.*", "3.13.*", "3.14.*"]
 
 [package.host-dependencies]
-uv = "*"
 python = "*"
 hatch-cython = ">=0.6.0"
 hatch-vcs = "*"
@@ -35,10 +34,15 @@ plotly = "*"
 # ---------------------------------
 # === Development Configuration ===
 # ---------------------------------
+[dev]
+cherab-iter = { path = "." }
+
 [dependencies]
 cherab-iter = { path = "." }
 ipython = "*"
-imas-core = "*"
+
+# For inversion weighted sum
+cherab-inversion = "*"
 
 # For notebook demos
 jupyterlab = "*"
@@ -116,14 +120,6 @@ doc-build = { cmd = [
 ], cwd = "docs", args = [
   { arg = "target", default = "html" },
 ], description = "📝 Build the docs" }
-doc-clean = { cmd = [
-  "rm",
-  "-rf",
-  "build/{{ target }}",
-  "source/_api",
-], cwd = "docs", args = [
-  { arg = "target", default = "html" },
-], description = "🔥 Clean the docs build & api directory" }
 doc-serve = { cmd = [
   "python",
   "-m",
@@ -166,8 +162,16 @@ cython-lint = { cmd = "cython-lint", description = "Lint Cython files" }
 lint = { cmd = "lefthook run pre-commit --all-files --force", description = "🧹 Run all linters" }
 
 [feature.tools.tasks]
-# Clean build artifacts
 clean = { cmd = "find src -type f \\( -name '*.c' -o -name '*.so' -o -name '*.pyd' -o -name '*.dll' \\) -delete", description = "🧹 Clean build artifacts" }
+
+doc-clean = { cmd = [
+  "rm",
+  "-rf",
+  "build/{{ target }}",
+  "source/_api",
+], cwd = "docs", args = [
+  { arg = "target", default = "html" },
+], description = "🔥 Clean the docs build & api directory" }
 
 # === Python environment features ===
 [feature.py310.dependencies]
