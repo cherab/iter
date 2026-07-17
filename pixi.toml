@@ -1,5 +1,5 @@
 [workspace]
-channels = ["conda-forge", "https://prefix.dev/imas-forge"]
+channels = ["conda-forge"]
 platforms = ["osx-arm64", "osx-64", "linux-64"]
 preview = ["pixi-build"]
 
@@ -174,19 +174,19 @@ doc-clean = { cmd = [
 ], description = "🔥 Clean the docs build & api directory" }
 
 # === Python environment features ===
-[feature.py310.dependencies]
+[feature.pyoldest.dependencies]
 python = "3.10.*"
-[feature.py314.dependencies]
+[feature.pylatest.dependencies]
 python = "3.14.*"
 
 [environments]
-default = { features = ["py314"], solve-group = "py314" }
-docs = { features = ["py314", "docs"], solve-group = "py314" }
-test = { features = ["py314", "test"], solve-group = "py314" }
-test-py310 = ["py310", "test"]
-test-py314 = { features = [
-  "py314",
+default = { features = ["pylatest"], solve-group = "pylatest" }
+docs = { features = ["pylatest", "docs"], solve-group = "pylatest" }
+test = { features = ["pylatest", "test"], solve-group = "pylatest" }
+test-pyoldest = ["pyoldest", "test"]
+test-pylatest = { features = [
+  "pylatest",
   "test",
-], solve-group = "py314" } # alias of test
+], solve-group = "pylatest" } # alias of test
 lint = ["lint", "test"]
 tools = { features = ["tools"], no-default-feature = true }
