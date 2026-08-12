@@ -45,10 +45,6 @@ pre-commit:
       glob: "*.{py,pyi}"
       run: pixi {run} pyrefly-check {staged_files}
 
-    - name: typos
-      stage_fixed: true
-      run: pixi {run} typos {staged_files}
-
     - name: actionlint
       glob: ".github/workflows/*.{yaml,yml}"
       run: pixi {run} actionlint {staged_files}
@@ -78,3 +74,7 @@ pre-commit:
       only:
         - run: test ${CI} -eq 1
       run: pixi {run} nbstripout --verify {staged_files}
+
+    - name: typos
+      stage_fixed: true
+      run: pixi {run} typos {staged_files}
