@@ -1,5 +1,5 @@
 [workspace]
-channels = ["conda-forge"]
+channels = ["conda-forge", "https://prefix.dev/koyo-forge"]
 platforms = ["osx-arm64", "osx-64", "linux-64"]
 preview = ["pixi-build"]
 
@@ -40,6 +40,9 @@ cherab-iter = { path = "." }
 [dependencies]
 cherab-iter = { path = "." }
 ipython = "*"
+
+# Type stubs for static type checking
+cherab-stubs = "*"
 
 # For inversion weighted sum
 cherab-inversion = "*"
