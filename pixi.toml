@@ -3,20 +3,20 @@ channels = ["conda-forge", "https://prefix.dev/koyo-forge"]
 platforms = ["osx-arm64", "osx-64", "linux-64"]
 preview = ["pixi-build"]
 
+[workspace.build-variants]
+python = ["3.10.*", "3.11.*", "3.12.*", "3.13.*", "3.14.*"]
+
 # -------------------------------
 # === Packaging Configuration ===
 # -------------------------------
 [package]
-version = "dynamic" # Until pixi recommends something else
+version = "dynamic"  # Until pixi recommends something else
 
 [package.build]
 backend = { name = "pixi-build-python", version = "*" }
 
 [package.build.config]
 noarch = false
-
-[workspace.build-variants]
-python = ["3.10.*", "3.11.*", "3.12.*", "3.13.*", "3.14.*"]
 
 [package.host-dependencies]
 python = "*"
@@ -76,12 +76,15 @@ UDA_CLIENT_SSL_AUTHENTICATE = "1"
 
 [tasks]
 ipython = { cmd = "ipython", description = "🐍 Start an IPython shell" }
-lab = { cmd = [
-  "jupyter",
-  "lab",
-  "--notebook-dir",
-  "demos",
-], description = "🚀 Run JupyterLab" }
+lab = {
+  cmd = [
+    "jupyter",
+    "lab",
+    "--notebook-dir",
+    "demos",
+  ],
+  description = "🚀 Run JupyterLab"
+}
 
 # === Tests feature ===
 [feature.test.dependencies]
@@ -112,25 +115,34 @@ sphinx-github-style = "*"
 sphinx-api-relink = "*"
 
 [feature.docs.tasks]
-doc-build = { cmd = [
-  "sphinx-build",
-  "-b",
-  "{{ target }}",
-  "-j",
-  "auto",
-  "source",
-  "build/{{ target }}",
-], cwd = "docs", args = [
-  { arg = "target", default = "html" },
-], description = "📝 Build the docs" }
-doc-serve = { cmd = [
-  "python",
-  "-m",
-  "http.server",
-  "8000",
-  "--directory",
-  "build/html",
-], cwd = "docs", description = "🚀 Start a local server for the docs" }
+doc-build = {
+  cmd = [
+    "sphinx-build",
+    "-b",
+    "{{ target }}",
+    "-j",
+    "auto",
+    "source",
+    "build/{{ target }}",
+  ],
+  cwd = "docs",
+  args = [
+    { arg = "target", default = "html" },
+  ],
+  description = "📝 Build the docs"
+}
+doc-serve = {
+  cmd = [
+    "python",
+    "-m",
+    "http.server",
+    "8000",
+    "--directory",
+    "build/html",
+  ],
+  cwd = "docs",
+  description = "🚀 Start a local server for the docs"
+}
 
 # === Linting feature ===
 [feature.lint.dependencies]
@@ -145,7 +157,7 @@ shellcheck = "*"
 validate-pyproject = "*"
 cython-lint = "*"
 blacken-docs = "*"
-taplo = "*"
+tombi = "*"
 
 [feature.lint.tasks]
 lefthook = { cmd = "lefthook", description = "🔗 Run lefthook" }
@@ -155,9 +167,9 @@ mypy = { cmd = "mypy", description = "Type check with mypy" }
 pyrefly-check = { cmd = "pyrefly check", description = "Type check with pyrefly" }
 ruff-check = { cmd = "ruff check --fix", description = "Lint with ruff" }
 ruff-format = { cmd = "ruff format", description = "Format with ruff" }
+toml-format = { cmd = "tombi format", description = "Format TOML files" }
 dprint = { cmd = "dprint fmt", description = "Format with dprint" }
 typos = { cmd = "typos --write-changes --force-exclude", description = "Fix typos" }
-taplo = { cmd = "taplo fmt", description = "Format toml files with taplo" }
 actionlint = { cmd = "actionlint", description = "Lint actions with actionlint" }
 blacken-docs = { cmd = "blacken-docs", description = "Format Python markdown blocks with Black" }
 validate-pyproject = { cmd = "validate-pyproject pyproject.toml", description = "Validate pyproject.toml" }
@@ -165,20 +177,24 @@ cython-lint = { cmd = "cython-lint", description = "Lint Cython files" }
 lint = { cmd = "lefthook run pre-commit --all-files --force", description = "🧹 Run all linters" }
 
 [feature.tools.tasks]
-clean = { cmd = "find src -type f \\( -name '*.c' -o -name '*.so' -o -name '*.pyd' -o -name '*.dll' \\) -delete", description = "🧹 Clean build artifacts" }
+clean = {
+  cmd = "find src -type f \\( -name '*.c' -o -name '*.so' -o -name '*.pyd' -o -name '*.dll' \\) -delete",
+  description = "🧹 Clean build artifacts",
+}
 
-doc-clean = { cmd = [
-  "rm",
-  "-rf",
-  "build/{{ target }}",
-  "source/_api",
-], cwd = "docs", args = [
-  { arg = "target", default = "html" },
-], description = "🔥 Clean the docs build & api directory" }
+doc-clean = {
+  cmd = ["rm", "-rf", "build/{{ target }}", "source/_api"],
+  cwd = "docs",
+  args = [
+    { arg = "target", default = "html" },
+  ],
+  description = "🔥 Clean the docs build & api directory"
+}
 
 # === Python environment features ===
 [feature.pyoldest.dependencies]
 python = "3.10.*"
+
 [feature.pylatest.dependencies]
 python = "3.14.*"
 
@@ -187,9 +203,6 @@ default = { features = ["pylatest"], solve-group = "pylatest" }
 docs = { features = ["pylatest", "docs"], solve-group = "pylatest" }
 test = { features = ["pylatest", "test"], solve-group = "pylatest" }
 test-pyoldest = ["pyoldest", "test"]
-test-pylatest = { features = [
-  "pylatest",
-  "test",
-], solve-group = "pylatest" } # alias of test
+test-pylatest = { features = ["pylatest", "test"], solve-group = "pylatest" }  # alias of test
 lint = ["lint", "test"]
 tools = { features = ["tools"], no-default-feature = true }
