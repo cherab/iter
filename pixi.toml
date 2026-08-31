@@ -1,10 +1,16 @@
 [workspace]
-channels = ["conda-forge", "https://prefix.dev/koyo-forge"]
+channels = ["conda-forge"]
 platforms = ["osx-arm64", "osx-64", "linux-64"]
 preview = ["pixi-build"]
 
 [workspace.build-variants]
-python = ["3.10.*", "3.11.*", "3.12.*", "3.13.*", "3.14.*"]
+python = [
+  "3.10.*",
+  "3.11.*",
+  "3.12.*",
+  "3.13.*",
+  "3.14.*",
+]
 
 # -------------------------------
 # === Packaging Configuration ===
@@ -83,7 +89,7 @@ lab = {
     "--notebook-dir",
     "demos",
   ],
-  description = "🚀 Run JupyterLab"
+  description = "🚀 Run JupyterLab",
 }
 
 # === Tests feature ===
@@ -129,7 +135,7 @@ doc-build = {
   args = [
     { arg = "target", default = "html" },
   ],
-  description = "📝 Build the docs"
+  description = "📝 Build the docs",
 }
 doc-serve = {
   cmd = [
@@ -141,7 +147,7 @@ doc-serve = {
     "build/html",
   ],
   cwd = "docs",
-  description = "🚀 Start a local server for the docs"
+  description = "🚀 Start a local server for the docs",
 }
 
 # === Linting feature ===
@@ -188,7 +194,7 @@ doc-clean = {
   args = [
     { arg = "target", default = "html" },
   ],
-  description = "🔥 Clean the docs build & api directory"
+  description = "🔥 Clean the docs build & api directory",
 }
 
 # === Python environment features ===

@@ -1,19 +1,15 @@
-[build-system]
-requires = ["hatch-cython>=0.6.0", "hatch-vcs", "numpy", "cherab-imas"]
-build-backend = "hatchling.build"
-
 [project]
 name = "cherab-iter"
 description = "Cherab spectroscopy framework, ITER subpackage"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "EUPL-1.1"
 authors = [
   { name = "munechika-koyo", email = "munechika.koyo@gmail.com" },
   { name = "vsnever" },
   { name = "jacklovell" },
 ]
-readme = "README.md"
-requires-python = ">=3.10"
-license = "EUPL-1.1"
-keywords = ["cherab", "ITER", "tokamak", "fusion", "plasma"]
+keywords = ["ITER", "cherab", "fusion", "plasma", "tokamak"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
@@ -21,10 +17,10 @@ classifiers = [
   "Intended Audience :: Science/Research",
   "Natural Language :: English",
   "Operating System :: Unix",
+  "Programming Language :: Cython",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
-  "Programming Language :: Cython",
   "Topic :: Scientific/Engineering :: Physics",
   "Topic :: Software Development :: Libraries",
   "Topic :: Software Development :: Libraries :: Python Modules",
@@ -32,26 +28,45 @@ classifiers = [
 dependencies = ["cherab-imas", "platformdirs", "rich"]
 dynamic = ["version"]
 
+[project.urls]
+Homepage = "https://github.com/cherab"
+Issues = "https://github.com/cherab/iter/issues"
+# Documentation = "https://cherab.github.io/cherab-iter"
+Repository = "https://github.com/cherab/iter"
+
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov", "cherab-imas[test]"]
 
-[project.urls]
-Homepage = "https://github.com/cherab"
-# Documentation = "https://cherab.github.io/cherab-iter"
-Repository = "https://github.com/cherab/iter"
-Issues = "https://github.com/cherab/iter/issues"
+[build-system]
+requires = ["cherab-imas", "hatch-cython>=0.6.0", "hatch-vcs", "numpy"]
+build-backend = "hatchling.build"
 
-# ----------------------
-# === Version config ===
-# ----------------------
+[tool.cibuildwheel]
+skip = "pp* *_ppc64le *_i686 *_s390x *-musllinux* cp313* cp314* cp315*"  # TODO: add cp313/314/315 when cherab supports it
+build-frontend = "build[uv]"
+test-extras = ["test"]
+test-command = "pytest {project}/tests"
+
+[tool.coverage.run]
+source_pkgs = ["cherab.iter"]
+branch = true
+parallel = true
+
+[tool.coverage.paths]
+test = ["src/test", "*/test/src/test"]
+tests = ["tests", "*/test/tests"]
+
+[tool.coverage.report]
+exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
+
+[tool.cython-lint]
+max-line-length = 100
+
 [tool.hatch.version]
 source = "vcs"
 
 [tool.hatch.metadata.hooks.vcs]
 
-# ----------------------------
-# === Build/Package config ===
-# ----------------------------
 [tool.hatch.build.targets.wheel]
 packages = ["src/cherab"]
 artifacts = ["*.so", "*.pyd", "*.dylib"]
@@ -81,84 +96,6 @@ define_macros = [["NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION"]]
 [tool.hatch.build.targets.wheel.hooks.cython.options.files]
 targets = ["**/*.pyx"]
 
-[tool.cibuildwheel]
-skip = "pp* *_ppc64le *_i686 *_s390x *-musllinux* cp313-* cp314-* cp314t-*" # TODO: add cp313/314 when cherab supports it
-build-frontend = "build[uv]"
-test-extras = ["test"]
-test-command = "pytest {project}/tests"
-
-# -----------------------
-# === Cov/Test config ===
-# -----------------------
-[tool.coverage.run]
-source_pkgs = ["cherab.iter"]
-branch = true
-parallel = true
-
-[tool.coverage.paths]
-test = ["src/test", "*/test/src/test"]
-tests = ["tests", "*/test/tests"]
-
-[tool.coverage.report]
-exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
-
-[tool.pytest.ini_options]
-minversion = "6.0"
-addopts = "--cov=cherab.iter --cov-report term-missing --no-cov-on-fail"
-
-
-# ------------------------------
-# === Lint & Format settings ===
-# ------------------------------
-[tool.ruff]
-line-length = 100
-
-[tool.ruff.lint]
-select = [
-  "E",   # pycodestyle
-  "B",   # flake8-bugbear
-  "F",   # pyflakes
-  "I",   # isort (import order)
-  "N",   # pep8-naming
-  "W",   # Warning
-  "UP",  # pyupgrade
-  "NPY", # numpy specific rules
-  "D",   # pydocstyle
-  "DOC", # pydoclint
-]
-preview = true
-ignore = [
-  # Recommended ignores by ruff when using formatter
-  "E501", # line too long
-  "N803", # argument name should be lowercase
-  "N806", # variable in function should be lowercase
-  "D107", # missing docstring in __init__
-]
-
-[tool.ruff.lint.isort]
-known-first-party = ["cherab"]
-
-[tool.ruff.lint.per-file-ignores]
-"**/*.ipynb" = [
-  "W292",
-  "D",
-  "DOC",
-] # no newline at end of file and skip docstring checks
-"tests/**" = ["D", "DOC"] # skip docstring checks in tests
-"docs/**" = ["D", "DOC"] # skip docstring checks in docs
-
-[tool.ruff.lint.pydocstyle]
-convention = "numpy"
-
-[tool.ruff.format]
-docstring-code-format = true
-
-[tool.cython-lint]
-max-line-length = 100
-
-# ------------------------------
-# === Type checking settings ===
-# ------------------------------
 [tool.mypy]
 files = ["src"]
 warn_unused_configs = true
@@ -169,3 +106,56 @@ plugins = ["numpy.typing.mypy_plugin"]
 
 [tool.pyrefly]
 project-includes = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "--cov=cherab.iter --cov-report term-missing --no-cov-on-fail"
+minversion = "6.0"
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+  "E",  # pycodestyle
+  "B",  # flake8-bugbear
+  "F",  # pyflakes
+  "I",  # isort (import order)
+  "N",  # pep8-naming
+  "W",  # Warning
+  "UP",  # pyupgrade
+  "NPY",  # numpy specific rules
+  "D",  # pydocstyle
+  "DOC",  # pydoclint
+]
+preview = true
+ignore = [
+  # Recommended ignores by ruff when using formatter
+  "E501",  # line too long
+  "N803",  # argument name should be lowercase
+  "N806",  # variable in function should be lowercase
+  "D107",  # missing docstring in __init__
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["cherab"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/*.ipynb" = [
+  "W292",
+  "D",
+  "DOC",
+]  # no newline at end of file and skip docstring checks
+"tests/**" = ["D", "DOC"]  # skip docstring checks in tests
+"docs/**" = ["D", "DOC"]  # skip docstring checks in docs
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.tombi]
+toml-version = "v1.1.0"
+
+[tool.typos.default.extend-words]
+Comput = "Comput"
