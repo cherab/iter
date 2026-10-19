@@ -5,11 +5,11 @@ preview = ["pixi-build"]
 
 [workspace.build-variants]
 python = [
-  "3.10.*",
   "3.11.*",
   "3.12.*",
   "3.13.*",
   "3.14.*",
+  "3.15.*",
 ]
 
 # -------------------------------
@@ -29,7 +29,7 @@ python = "*"
 hatch-cython = ">=0.6.0"
 hatch-vcs = "*"
 cython = ">=3.1,<4"
-cherab = "1.5.*"
+cherab = "1.6.*"
 
 [package.run-dependencies]
 cherab-imas = "*"
@@ -199,7 +199,7 @@ doc-clean = {
 
 # === Python environment features ===
 [feature.pyoldest.dependencies]
-python = "3.10.*"
+python = "3.11.*"
 
 [feature.pylatest.dependencies]
 python = "3.14.*"
