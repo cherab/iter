@@ -75,9 +75,9 @@ ultraplot = ">=1.72.0"
 # UDA environment variables
 UDA_PORT = "56565"
 UDA_HOST = "uda.iter.org"
-UDA_CLIENT_SSL_KEY = "$PIXI_PROJECT_ROOT/.uda/private.key"
-UDA_CLIENT_CA_SSL_CERT = "$PIXI_PROJECT_ROOT/.uda/ca-server-certificate.pem"
-UDA_CLIENT_SSL_CERT = "$PIXI_PROJECT_ROOT/.uda/certificate.pem"
+UDA_CLIENT_SSL_KEY = "$PIXI_WORKSPACE_ROOT/.uda/private.key"
+UDA_CLIENT_CA_SSL_CERT = "$PIXI_WORKSPACE_ROOT/.uda/ca-server-certificate.pem"
+UDA_CLIENT_SSL_CERT = "$PIXI_WORKSPACE_ROOT/.uda/certificate.pem"
 UDA_CLIENT_SSL_AUTHENTICATE = "1"
 
 [tasks]
